@@ -1,7 +1,6 @@
 <template>
-  <div class="home">
-    <span>Toka Todo</span>
+  <div class="dashboard">
+    <span>Dashboard</span>
   </div>
 </template>
-
 <script setup lang="ts"></script>
