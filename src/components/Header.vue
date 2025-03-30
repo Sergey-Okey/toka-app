@@ -1,34 +1,61 @@
 <template>
   <header class="header">
-    <nav>
-      <router-link to="/">Главная</router-link>
-      <router-link to="/dashboard">Dashboard</router-link>
-      <router-link to="/tasks">Задачи</router-link>
-      <router-link to="/calendar">Календарь</router-link>
+    <div class="logo">
+      <span class="logo-text">Toka</span>
+    </div>
+    <nav class="nav">
+      <router-link class="link-header" to="/">Главная</router-link>
+      <router-link class="link-header" to="/dashboard">Dashboard</router-link>
+      <router-link class="link-header" to="/tasks">Задачи</router-link>
+      <router-link class="link-header" to="/calendar">Календарь</router-link>
     </nav>
+    <Button />
   </header>
 </template>
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import Button from './Button.vue'
+</script>
+
 <style lang="scss" scoped>
 .header {
-  width: 100%;
+  margin: 10px 0;
+  width: 80%;
+  margin: 20px auto;
+  border-radius: 2ric;
   display: flex;
-  backdrop-filter: blur(4px);
-
-  nav {
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  backdrop-filter: blur(10px);
+  background-color: #ffffff1b;
+  outline: solid 1px #dddddd82;
+  flex-wrap: wrap;
+  .logo-text {
+    padding: 5px 10px;
+    font-weight: 700;
+    font-size: 1.5rem;
+  }
+  .nav {
     display: flex;
-    width: 100%;
+    white-space: spaces;
     justify-content: space-between;
+    align-items: center;
+    gap: 3rem;
+    flex-wrap: wrap;
+  }
+  .link-header {
+    text-decoration: none;
+    list-style: none;
+    color: rgb(155, 154, 154);
+    padding: 5px 10px;
+    border-radius: 1ric;
 
-    a {
-      font-weight: bold;
-      text-decoration: none;
-      list-style: none;
-      color: #434547;
-
-      &.router-link-exact-active {
-        color: #434547;
-      }
+    &.router-link-exact-active {
+      color: #ffffff;
+      background-color: #00000075;
+      background-clip: blur(10px);
+      border-radius: 1ric;
+      transition: 0.3s ease;
     }
   }
 }

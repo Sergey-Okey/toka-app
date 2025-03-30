@@ -6,7 +6,7 @@
 </template>
 
 <script setup lang="ts">
-import Header from './components/Header.vue'
+import Header from '@/components/Header.vue'
 </script>
 <style lang="scss">
 #app {
@@ -14,20 +14,26 @@ import Header from './components/Header.vue'
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
   font-size: 1rem;
 }
 
-body {
+* {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+body {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+
+  color: #ffffff;
+  background: #1c1c1c;
+}
 .container {
   max-width: 1200px;
-  width: 100%;
+  padding: 0 100px;
   margin: 0 auto;
-  padding: 20px;
 }
 </style>
