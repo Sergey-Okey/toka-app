@@ -1,7 +1,7 @@
 <template>
   <header class="header">
     <div class="logo">
-      <span class="logo-text">Toka</span>
+      <router-link class="logo-text" to="/">Toka</router-link>
     </div>
     <nav class="nav">
       <router-link class="link-header" to="/">Главная</router-link>
@@ -23,6 +23,9 @@ import Button from './Button.vue'
   margin: 20px auto;
   border-radius: 2ric;
   display: flex;
+  position: sticky;
+  z-index: 10;
+  top: 10px;
   align-items: center;
   justify-content: space-between;
   padding: 10px 20px;
@@ -34,6 +37,9 @@ import Button from './Button.vue'
     padding: 5px 10px;
     font-weight: 700;
     font-size: 1.5rem;
+    list-style: none;
+    text-decoration: none;
+    color: rgb(255, 255, 255);
   }
   .nav {
     display: flex;
