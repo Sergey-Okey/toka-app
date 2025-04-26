@@ -1,13 +1,14 @@
 <template>
   <div class="container">
-    <Header />
+    <AppHeader />
     <router-view />
   </div>
 </template>
 
 <script setup lang="ts">
-import Header from '@/components/Header.vue'
+import AppHeader from './components/AppHeader.vue'
 </script>
+
 <style lang="scss">
 #app {
   font-family: 'Jost';
@@ -28,41 +29,62 @@ body {
   margin: 0;
   padding: 0;
   background:
-    radial-gradient(
-      at 47.966219997892225% 59.17791208933168%,
-      hsla(195, 8.16326530612245%, 19.215686274509807%, 1) 0%,
-      hsla(195, 8.16326530612245%, 19.215686274509807%, 0) 100%
-    ),
-    radial-gradient(
-      at 47.64933301345313% 82.3942086004094%,
-      hsla(0, 6.25%, 18.823529411764707%, 1) 0%,
-      hsla(0, 6.25%, 18.823529411764707%, 0) 100%
-    ),
-    radial-gradient(
-      at 95.4924348957064% 30.991218769813667%,
-      hsla(135.00000000000003, 5.454545454545454%, 43.13725490196079%, 1) 0%,
-      hsla(135.00000000000003, 5.454545454545454%, 43.13725490196079%, 0) 100%
-    ),
-    radial-gradient(
-      at 33.063428122547755% 63.915493762477546%,
-      hsla(195.99999999999997, 8.021390374331544%, 36.66666666666667%, 1) 0%,
-      hsla(195.99999999999997, 8.021390374331544%, 36.66666666666667%, 0) 100%
-    ),
-    radial-gradient(
-      at 15.148471558648247% 8.345630190076857%,
-      hsla(195, 8.16326530612245%, 19.215686274509807%, 1) 0%,
-      hsla(195, 8.16326530612245%, 19.215686274509807%, 0) 100%
-    );
+    url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"%3E%3Cpath fill="none" stroke="%2331a974" stroke-width="6" d="M0,300 Q400,150 600,400 T1200,300" /%3E%3C/svg%3E')
+      no-repeat center center,
+    linear-gradient(135deg, rgba(0, 0, 0, 0.752) 50%, rgba(0, 0, 0, 0.786) 50%);
+  background-size: cover;
+
   color: #ffffff;
 }
+
 .container {
   max-width: 1200px;
   padding: 0 100px;
   margin: 0 auto;
 }
+
 .title {
   font-size: 3rem;
   font-weight: 600;
   line-height: 120%;
+}
+
+/* Адаптив для разных экранов */
+@media (max-width: 1200px) {
+  .container {
+    padding: 0 50px;
+  }
+  .title {
+    font-size: 2.5rem;
+  }
+}
+
+@media (max-width: 992px) {
+  .container {
+    padding: 0 30px;
+  }
+  .title {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 20px;
+  }
+  .title {
+    font-size: 1.5rem;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 10px;
+  }
+  .title {
+    font-size: 1.2rem;
+    line-height: 1.3;
+  }
 }
 </style>

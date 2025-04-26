@@ -1,5 +1,9 @@
 <template>
-  <div class="calendar">
-    <span class="title">Calendar</span>
+  <div class="calendar-page">
+    <Calendar />
   </div>
 </template>
+
+<script setup>
+import Calendar from '@/components/Calendar.vue'
+</script>

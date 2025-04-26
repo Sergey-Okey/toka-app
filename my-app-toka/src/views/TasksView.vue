@@ -1,6 +1,9 @@
 <template>
-  <div class="tasks">
-    <span class="title">Tasks</span>
+  <div class="tasks-page">
+    <TaskManager />
   </div>
 </template>
-<style setup lang="ts" scoped></style>
+
+<script setup>
+import TaskManager from '@/components/TaskManager.vue'
+</script>
