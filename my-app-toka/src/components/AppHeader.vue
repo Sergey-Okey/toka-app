@@ -15,8 +15,8 @@
       <router-link class="link-header" to="/dashboard">Dashboard</router-link>
       <router-link class="link-header" to="/tasks">Задачи</router-link>
       <router-link class="link-header" to="/calendar">Календарь</router-link>
-      <Button />
     </nav>
+    <Button />
   </header>
 </template>
 
@@ -33,7 +33,7 @@ const toggleMenu = () => {
 <style lang="scss" scoped>
 .header {
   margin: 20px auto;
-  max-width: 80%;
+  max-width: 100%;
   border-radius: 1.2rem;
   display: flex;
   align-items: center;
