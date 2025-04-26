@@ -575,14 +575,8 @@ export default {
 
 <style lang="scss" scoped>
 .task-manager {
-  max-width: 1200px;
   margin: 0 auto;
   padding: 2rem 1rem;
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    sans-serif;
   color: #ffffff;
   display: flex;
   flex-direction: column;
@@ -634,7 +628,7 @@ export default {
     padding: 0.8rem 1.5rem;
     background-color: rgba(221, 221, 221, 0.2);
     color: #ffffff;
-    font-size: 1rem;
+    font-size: 1.2rem;
 
     &:hover {
       background-color: rgba(221, 221, 221, 0.3);
@@ -679,8 +673,9 @@ export default {
   select {
     padding: 0.8rem;
     border-radius: 0.8rem;
-    border: 1px solid rgba(221, 221, 221, 0.3);
-    background-color: rgba(40, 40, 42, 0.8);
+    border: solid 1px #dddddd82;
+    backdrop-filter: blur(50px);
+    background: inherit;
     color: #ffffff;
     font-size: 1rem;
     outline: none;
@@ -711,15 +706,14 @@ export default {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(5px);
   }
 
   .editor-container {
     position: relative;
+    backdrop-filter: blur(50px);
     width: 100%;
     max-width: 500px;
-    background-color: rgba(30, 30, 32, 0.9);
     border-radius: 1.2rem;
     padding: 2rem;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
@@ -762,7 +756,7 @@ export default {
           padding: 0.6rem;
           background-color: rgba(221, 221, 221, 0.1);
           color: #b0b0b0;
-          font-size: 0.9rem;
+          font-size: 1.2rem;
           border-radius: 0.6rem;
 
           &.active {
@@ -800,7 +794,7 @@ export default {
           background-color: rgba(49, 169, 116, 0.2);
           border-radius: 0.4rem;
           color: #31a974;
-          font-size: 0.8rem;
+          font-size: 1.2rem;
 
           i {
             font-size: 0.9rem;
@@ -870,7 +864,7 @@ export default {
       margin-bottom: 2rem;
 
       .stat-card {
-        background-color: rgba(30, 30, 32, 0.8);
+        backdrop-filter: blur(50px);
         border-radius: 1rem;
         padding: 1.2rem;
         border: 1px solid rgba(221, 221, 221, 0.2);
@@ -884,7 +878,7 @@ export default {
         }
 
         .stat-label {
-          font-size: 0.9rem;
+          font-size: 1.2rem;
           color: #b0b0b0;
         }
       }
@@ -898,7 +892,6 @@ export default {
     }
 
     .task-card {
-      background-color: rgba(30, 30, 32, 0.8);
       backdrop-filter: blur(50px);
       border-radius: 1.2rem;
       padding: 1.5rem;
@@ -957,7 +950,7 @@ export default {
 
           .task-title {
             margin: 0;
-            font-size: 1.1rem;
+            font-size: 1.5rem;
             font-weight: 500;
             color: #ffffff;
           }
@@ -969,7 +962,7 @@ export default {
               display: flex;
               align-items: center;
               gap: 0.3rem;
-              font-size: 0.9rem;
+              font-size: 1.2rem;
               color: #b0b0b0;
 
               .overdue-badge {
@@ -978,7 +971,7 @@ export default {
                 background-color: rgba(255, 59, 48, 0.2);
                 border-radius: 0.4rem;
                 color: #ff3b30;
-                font-size: 0.7rem;
+                font-size: 1.2rem;
               }
             }
 
@@ -991,7 +984,7 @@ export default {
                 display: flex;
                 align-items: center;
                 gap: 0.3rem;
-                font-size: 0.8rem;
+                font-size: 1.2rem;
                 padding: 0.2rem 0.7rem;
                 border-radius: 0.4rem;
 
@@ -1015,7 +1008,7 @@ export default {
                 display: flex;
                 align-items: center;
                 gap: 0.3rem;
-                font-size: 0.8rem;
+                font-size: 1.2rem;
                 color: #b0b0b0;
               }
             }
@@ -1028,8 +1021,8 @@ export default {
             margin-top: 0.7rem;
 
             .tag {
-              font-size: 0.7rem;
-              padding: 0.2rem 0.7rem;
+              font-size: 1.2rem;
+              padding: 0.5rem 2rem;
               background-color: rgba(49, 169, 116, 0.2);
               border-radius: 0.4rem;
               color: #31a974;
@@ -1112,7 +1105,6 @@ export default {
       left: 0;
       right: 0;
       bottom: 0;
-      background-color: rgba(0, 0, 0, 0.7);
       backdrop-filter: blur(5px);
     }
 
