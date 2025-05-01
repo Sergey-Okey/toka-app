@@ -1,28 +1,42 @@
 <template>
   <header class="header">
-    <div class="logo">
-      <router-link class="logo-text" to="/">Toka</router-link>
+    <div class="header-container">
+      <div class="logo">
+        <router-link class="logo-text" to="/">Toka</router-link>
+      </div>
+
+      <div class="header-right">
+        <button
+          class="burger"
+          v-if="isLoggedIn && isMobile"
+          @click="toggleMenu"
+          :class="{ open: isOpen }"
+          aria-label="Toggle navigation menu"
+          aria-expanded="isOpen"
+        >
+          <span class="burger-line"></span>
+          <span class="burger-line"></span>
+          <span class="burger-line"></span>
+        </button>
+
+        <nav
+          :class="{ nav: true, open: isOpen }"
+          @click="handleNavClick"
+          aria-label="Main navigation"
+        >
+          <router-link class="link-header" to="/">Главная</router-link>
+          <router-link class="link-header" to="/dashboard"
+            >Dashboard</router-link
+          >
+          <router-link class="link-header" to="/tasks">Задачи</router-link>
+          <router-link class="link-header" to="/calendar"
+            >Календарь</router-link
+          >
+        </nav>
+
+        <Button v-if="isLoggedIn" class="header-button" />
+      </div>
     </div>
-
-    <button
-      class="burger"
-      v-if="isLoggedIn"
-      @click="toggleMenu"
-      :class="{ open: isOpen }"
-      aria-label="Toggle navigation menu"
-    >
-      <span></span>
-      <span></span>
-      <span></span>
-    </button>
-
-    <nav :class="{ nav: true, open: isOpen }" @click="handleNavClick">
-      <router-link class="link-header" to="/">Главная</router-link>
-      <router-link class="link-header" to="/dashboard">Dashboard</router-link>
-      <router-link class="link-header" to="/tasks">Задачи</router-link>
-      <router-link class="link-header" to="/calendar">Календарь</router-link>
-    </nav>
-    <Button />
   </header>
 </template>
 
@@ -33,7 +47,7 @@ import Button from './Button.vue'
 
 const route = useRoute()
 const isOpen = ref(false)
-const isLoggedIn = ref(true) // Замените на реальную проверку авторизации
+const isLoggedIn = ref(true)
 const isMobile = ref(false)
 
 const checkScreenSize = () => {
@@ -57,29 +71,21 @@ const updateBodyOverflow = () => {
 }
 
 const handleNavClick = (event: Event) => {
-  if (
-    isMobile.value &&
-    (event.target as HTMLElement).classList.contains('link-header')
-  ) {
+  if ((event.target as HTMLElement).closest('.link-header')) {
     closeMenu()
   }
 }
 
-const handleResize = () => {
+const handleResize = debounce(() => {
   checkScreenSize()
   if (!isMobile.value) {
     closeMenu()
   }
-}
+}, 100)
 
-// Закрываем меню при изменении маршрута
 watch(
   () => route.path,
-  () => {
-    if (isMobile.value) {
-      closeMenu()
-    }
-  }
+  () => closeMenu()
 )
 
 onMounted(() => {
@@ -91,12 +97,20 @@ onBeforeUnmount(() => {
   window.removeEventListener('resize', handleResize)
   document.body.style.overflow = ''
 })
+
+function debounce(fn: Function, delay: number) {
+  let timeoutId: number
+  return (...args: any[]) => {
+    clearTimeout(timeoutId)
+    timeoutId = setTimeout(() => fn(...args), delay)
+  }
+}
 </script>
 
 <style lang="scss" scoped>
 .header {
   margin: 20px auto;
-  max-width: 100%;
+  width: 80%;
   border-radius: 1.2rem;
   display: flex;
   align-items: center;
@@ -109,6 +123,19 @@ onBeforeUnmount(() => {
   z-index: 10;
   flex-wrap: wrap;
   transition: all 0.3s ease;
+
+  &-container {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  &-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
 
   .logo-text {
     font-weight: 700;
@@ -129,20 +156,20 @@ onBeforeUnmount(() => {
     padding: 0.5rem;
     cursor: pointer;
     z-index: 101;
-    flex-direction: column;
-    gap: 5px;
     position: relative;
     width: 25px;
     height: 20px;
 
-    span {
+    &-line {
       display: block;
       position: absolute;
       width: 100%;
       height: 3px;
       background: #31a974;
       border-radius: 10px;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition:
+        transform 0.3s ease,
+        opacity 0.3s ease;
       left: 0;
 
       &:nth-child(1) {
@@ -161,7 +188,7 @@ onBeforeUnmount(() => {
     }
 
     &.open {
-      span {
+      .burger-line {
         &:nth-child(1) {
           top: 50%;
           transform: translateY(-50%) rotate(45deg);
@@ -179,9 +206,11 @@ onBeforeUnmount(() => {
 
   .nav {
     display: flex;
-    gap: 2rem;
+    gap: 1rem;
     align-items: center;
-    transition: all 0.5s ease;
+    transition:
+      max-height 0.5s ease,
+      padding 0.5s ease;
     backdrop-filter: blur(50px);
 
     .link-header {
@@ -190,7 +219,9 @@ onBeforeUnmount(() => {
       padding: 5px 10px;
       border-radius: 0.5rem;
       position: relative;
-      transition: all 0.3s ease;
+      transition:
+        color 0.3s ease,
+        width 0.3s ease;
 
       &::after {
         content: '';
@@ -200,7 +231,7 @@ onBeforeUnmount(() => {
         width: 0;
         height: 2px;
         background: #31a974;
-        transition: all 0.3s ease;
+        transition: width 0.3s ease;
         transform: translateX(-50%);
       }
 
@@ -235,6 +266,8 @@ onBeforeUnmount(() => {
       left: 0;
       margin-top: 10px;
       box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      gap: 0.5rem;
 
       &.open {
         max-height: 500px;
@@ -253,11 +286,14 @@ onBeforeUnmount(() => {
       display: flex;
     }
 
+    .header-button {
+      display: none;
+    }
+
     .nav {
       width: 100%;
       justify-content: center;
       align-items: center;
-      gap: 1.5rem;
       backdrop-filter: blur(50px);
     }
   }

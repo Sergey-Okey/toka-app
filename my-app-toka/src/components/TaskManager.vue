@@ -1,5 +1,11 @@
 <template>
   <div class="task-manager">
+    <!-- Кнопка назад в календарь -->
+    <button v-if="selectedDate" class="back-button" @click="backToCalendar">
+      <i class="material-icons">arrow_back</i>
+      Назад к календарю
+    </button>
+
     <!-- Редактор задач -->
     <div v-if="editorVisible" class="editor-modal">
       <div class="editor-backdrop" @click="closeEditor"></div>
@@ -149,19 +155,19 @@
       <!-- Статистика -->
       <div class="stats">
         <div class="stat-card">
-          <div class="stat-value">{{ totalTasks }}</div>
+          <div class="stat-value">{{ taskStore.totalTasks }}</div>
           <div class="stat-label">Всего задач</div>
         </div>
         <div class="stat-card">
-          <div class="stat-value">{{ activeTasks }}</div>
+          <div class="stat-value">{{ taskStore.activeTasks }}</div>
           <div class="stat-label">Активных</div>
         </div>
         <div class="stat-card">
-          <div class="stat-value">{{ completedTasks }}</div>
+          <div class="stat-value">{{ taskStore.completedTasks }}</div>
           <div class="stat-label">Завершено</div>
         </div>
         <div class="stat-card">
-          <div class="stat-value">{{ overdueTasks }}</div>
+          <div class="stat-value">{{ taskStore.overdueTasks }}</div>
           <div class="stat-label">Просрочено</div>
         </div>
       </div>
@@ -173,9 +179,10 @@
             <i class="material-icons">checklist</i>
           </div>
           <h3>Нет задач</h3>
-          <p>Добавьте новую задачу, нажав на кнопку +</p>
+          <p v-if="selectedDate">Нет задач на {{ formattedSelectedDate }}</p>
+          <p v-else>Добавьте новую задачу, нажав на кнопку +</p>
           <button class="primary-button" @click="openEditor(null)">
-            Создать первую задачу
+            Создать задачу
           </button>
         </div>
 
@@ -185,12 +192,15 @@
           class="task-card"
           :class="{
             completed: task.completed,
-            overdue: isTaskOverdue(task),
+            overdue: taskStore.isTaskOverdue(task),
             priority: task.priority !== 'none',
             [task.priority]: task.priority !== 'none',
           }"
         >
-          <div class="task-main" @click="toggleTaskCompletion(task.id)">
+          <div
+            class="task-main"
+            @click="taskStore.toggleTaskCompletion(task.id)"
+          >
             <div class="task-checkbox">
               <i class="material-icons">
                 {{ task.completed ? 'check_circle' : 'radio_button_unchecked' }}
@@ -204,7 +214,10 @@
                 <div v-if="task.dueDate" class="task-due-date">
                   <i class="material-icons">calendar_today</i>
                   <span>{{ formatDate(task.dueDate) }}</span>
-                  <span v-if="isTaskOverdue(task)" class="overdue-badge">
+                  <span
+                    v-if="taskStore.isTaskOverdue(task)"
+                    class="overdue-badge"
+                  >
                     Просрочено
                   </span>
                 </div>
@@ -264,10 +277,7 @@
           >
             Отмена
           </button>
-          <button
-            class="primary-button danger"
-            @click="deleteTask(deleteTaskId)"
-          >
+          <button class="primary-button danger" @click="handleDeleteTask">
             Удалить
           </button>
         </div>
@@ -276,300 +286,230 @@
   </div>
 </template>
 
-<script>
-import { ref, computed, onMounted } from 'vue'
+<script setup>
+import { ref, computed, watch } from 'vue'
+import { useTaskStore } from '@/stores/taskStore'
+import { useRoute, useRouter } from 'vue-router'
 
-export default {
-  name: 'TaskManager',
-  setup() {
-    // Состояние приложения
-    const tasks = ref([])
-    const editorVisible = ref(false)
-    const editingTask = ref(null)
-    const confirmDialogVisible = ref(false)
-    const deleteTaskId = ref(null)
-    const newTag = ref('')
+const route = useRoute()
+const router = useRouter()
+const taskStore = useTaskStore()
 
-    // Параметры сортировки и фильтрации
-    const sortField = ref('dueDate')
-    const sortDirection = ref('asc')
-    const filterStatus = ref('all')
-    const searchQuery = ref('')
+// Состояние UI
+const editorVisible = ref(false)
+const editingTask = ref(null)
+const confirmDialogVisible = ref(false)
+const deleteTaskId = ref(null)
+const newTag = ref('')
 
-    // Форма редактирования
-    const form = ref({
+// Параметры сортировки и фильтрации
+const sortField = ref('dueDate')
+const sortDirection = ref('asc')
+const filterStatus = ref('all')
+const searchQuery = ref('')
+
+// Форма редактирования
+const form = ref({
+  id: null,
+  title: '',
+  dueDate: '',
+  priority: 'none',
+  tags: [],
+  completed: false,
+  createdAt: new Date().toISOString(),
+})
+
+// Обработка выбранной даты из query параметра
+const selectedDate = computed(() => {
+  return route.query.date ? new Date(route.query.date) : null
+})
+
+const formattedSelectedDate = computed(() => {
+  if (!selectedDate.value) return ''
+  return selectedDate.value.toLocaleDateString('ru-RU', {
+    day: 'numeric',
+    month: 'long',
+  })
+})
+
+// Методы работы с задачами
+const openEditor = (task) => {
+  if (task) {
+    form.value = {
+      id: task.id,
+      title: task.title,
+      dueDate: task.dueDate ? task.dueDate.split('T')[0] : '',
+      priority: task.priority,
+      tags: [...task.tags],
+      completed: task.completed,
+      createdAt: task.createdAt,
+    }
+    editingTask.value = task
+  } else {
+    // Если есть выбранная дата, устанавливаем ее для новой задачи
+    const dueDate = selectedDate.value
+      ? selectedDate.value.toISOString().split('T')[0]
+      : ''
+
+    form.value = {
       id: null,
       title: '',
-      dueDate: '',
+      dueDate: dueDate,
       priority: 'none',
       tags: [],
       completed: false,
       createdAt: new Date().toISOString(),
+    }
+    editingTask.value = null
+  }
+  editorVisible.value = true
+}
+
+const closeEditor = () => {
+  editorVisible.value = false
+  newTag.value = ''
+}
+
+const handleSave = () => {
+  const taskData = {
+    id: form.value.id || Date.now().toString(),
+    title: form.value.title,
+    dueDate: form.value.dueDate
+      ? new Date(form.value.dueDate).toISOString()
+      : null,
+    priority: form.value.priority,
+    tags: form.value.tags,
+    completed: form.value.completed,
+    createdAt: form.value.createdAt || new Date().toISOString(),
+  }
+
+  taskStore.saveTask(taskData)
+  closeEditor()
+}
+
+const confirmDelete = (taskId) => {
+  deleteTaskId.value = taskId
+  confirmDialogVisible.value = true
+}
+
+const handleDeleteTask = () => {
+  taskStore.deleteTask(deleteTaskId.value)
+  confirmDialogVisible.value = false
+}
+
+// Методы работы с тегами
+const addTag = () => {
+  if (newTag.value.trim() && !form.value.tags.includes(newTag.value.trim())) {
+    form.value.tags.push(newTag.value.trim())
+    newTag.value = ''
+  }
+}
+
+const removeTag = (tag) => {
+  form.value.tags = form.value.tags.filter((t) => t !== tag)
+}
+
+const clearDueDate = () => {
+  form.value.dueDate = ''
+}
+
+// Навигация
+const backToCalendar = () => {
+  router.push('/calendar')
+}
+
+// Сортировка и фильтрация
+const toggleSortDirection = () => {
+  sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+}
+
+const sortedTasks = computed(() => {
+  return [...taskStore.tasks].sort((a, b) => {
+    // Для числовых значений (приоритет)
+    if (sortField.value === 'priority') {
+      const priorityOrder = { high: 3, medium: 2, low: 1, none: 0 }
+      const valA = priorityOrder[a.priority]
+      const valB = priorityOrder[b.priority]
+      return sortDirection.value === 'asc' ? valA - valB : valB - valA
+    }
+
+    // Для дат
+    if (sortField.value === 'dueDate' || sortField.value === 'createdAt') {
+      const valA = a[sortField.value]
+        ? new Date(a[sortField.value]).getTime()
+        : 0
+      const valB = b[sortField.value]
+        ? new Date(b[sortField.value]).getTime()
+        : 0
+      return sortDirection.value === 'asc' ? valA - valB : valB - valA
+    }
+
+    // Для строк
+    const valA = a[sortField.value]?.toString().toLowerCase() || ''
+    const valB = b[sortField.value]?.toString().toLowerCase() || ''
+    if (valA < valB) return sortDirection.value === 'asc' ? -1 : 1
+    if (valA > valB) return sortDirection.value === 'asc' ? 1 : -1
+    return 0
+  })
+})
+
+const filteredTasks = computed(() => {
+  // Фильтрация по выбранной дате если она есть
+  let tasks = selectedDate.value
+    ? taskStore.getTasksForDate(selectedDate.value)
+    : [...sortedTasks.value]
+
+  // Фильтрация по статусу
+  if (filterStatus.value === 'active') {
+    tasks = tasks.filter((task) => !task.completed)
+  } else if (filterStatus.value === 'completed') {
+    tasks = tasks.filter((task) => task.completed)
+  } else if (filterStatus.value === 'overdue') {
+    tasks = tasks.filter((task) => taskStore.isTaskOverdue(task))
+  }
+
+  // Поиск по запросу
+  if (searchQuery.value) {
+    const search = searchQuery.value.toLowerCase()
+    tasks = tasks.filter((task) => {
+      const inTitle = task.title.toLowerCase().includes(search)
+      const inTags = task.tags.some((tag) => tag.toLowerCase().includes(search))
+      return inTitle || inTags
     })
+  }
 
-    // Загрузка задач из localStorage
-    onMounted(() => {
-      const savedTasks = localStorage.getItem('tasks')
-      if (savedTasks) {
-        tasks.value = JSON.parse(savedTasks)
-      }
+  return tasks
+})
+
+// Вспомогательные функции
+const formatDate = (dateString, time = false) => {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+
+  if (time) {
+    return date.toLocaleString('ru-RU', {
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
     })
+  }
 
-    // Сохранение задач в localStorage
-    const saveTasks = () => {
-      localStorage.setItem('tasks', JSON.stringify(tasks.value))
-    }
+  return date.toLocaleDateString('ru-RU', {
+    day: 'numeric',
+    month: 'short',
+    year:
+      date.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined,
+  })
+}
 
-    // Проверка просроченности задачи
-    const isTaskOverdue = (task) => {
-      if (task.completed || !task.dueDate) return false
-      return new Date(task.dueDate) < new Date()
-    }
-
-    // Форматирование даты
-    const formatDate = (dateString, time = false) => {
-      if (!dateString) return ''
-      const date = new Date(dateString)
-
-      if (time) {
-        return date.toLocaleString('ru-RU', {
-          day: 'numeric',
-          month: 'short',
-          hour: '2-digit',
-          minute: '2-digit',
-        })
-      }
-
-      return date.toLocaleDateString('ru-RU', {
-        day: 'numeric',
-        month: 'short',
-        year:
-          date.getFullYear() !== new Date().getFullYear()
-            ? 'numeric'
-            : undefined,
-      })
-    }
-
-    // Метки приоритетов
-    const getPriorityLabel = (priority) => {
-      const labels = {
-        high: 'Высокий',
-        medium: 'Средний',
-        low: 'Низкий',
-      }
-      return labels[priority] || ''
-    }
-
-    // Открытие редактора
-    const openEditor = (task) => {
-      if (task) {
-        form.value = {
-          id: task.id,
-          title: task.title,
-          dueDate: task.dueDate ? task.dueDate.split('T')[0] : '',
-          priority: task.priority,
-          tags: [...task.tags],
-          completed: task.completed,
-          createdAt: task.createdAt,
-        }
-        editingTask.value = task
-      } else {
-        form.value = {
-          id: null,
-          title: '',
-          dueDate: '',
-          priority: 'none',
-          tags: [],
-          completed: false,
-          createdAt: new Date().toISOString(),
-        }
-        editingTask.value = null
-      }
-      editorVisible.value = true
-    }
-
-    // Закрытие редактора
-    const closeEditor = () => {
-      editorVisible.value = false
-      newTag.value = ''
-    }
-
-    // Очистка даты выполнения
-    const clearDueDate = () => {
-      form.value.dueDate = ''
-    }
-
-    // Добавление тега
-    const addTag = () => {
-      if (
-        newTag.value.trim() &&
-        !form.value.tags.includes(newTag.value.trim())
-      ) {
-        form.value.tags.push(newTag.value.trim())
-        newTag.value = ''
-      }
-    }
-
-    // Удаление тега
-    const removeTag = (tag) => {
-      form.value.tags = form.value.tags.filter((t) => t !== tag)
-    }
-
-    // Сохранение задачи
-    const handleSave = () => {
-      const taskData = {
-        id: form.value.id || Date.now().toString(),
-        title: form.value.title,
-        dueDate: form.value.dueDate
-          ? new Date(form.value.dueDate).toISOString()
-          : null,
-        priority: form.value.priority,
-        tags: form.value.tags,
-        completed: form.value.completed,
-        createdAt: form.value.createdAt || new Date().toISOString(),
-      }
-
-      if (editingTask.value) {
-        const index = tasks.value.findIndex((t) => t.id === taskData.id)
-        if (index !== -1) {
-          tasks.value[index] = taskData
-        }
-      } else {
-        tasks.value.unshift(taskData)
-      }
-
-      saveTasks()
-      closeEditor()
-    }
-
-    // Переключение статуса выполнения
-    const toggleTaskCompletion = (taskId) => {
-      const task = tasks.value.find((t) => t.id === taskId)
-      if (task) {
-        task.completed = !task.completed
-        saveTasks()
-      }
-    }
-
-    // Подтверждение удаления
-    const confirmDelete = (taskId) => {
-      deleteTaskId.value = taskId
-      confirmDialogVisible.value = true
-    }
-
-    // Удаление задачи
-    const deleteTask = (taskId) => {
-      tasks.value = tasks.value.filter((task) => task.id !== taskId)
-      saveTasks()
-      confirmDialogVisible.value = false
-    }
-
-    // Переключение направления сортировки
-    const toggleSortDirection = () => {
-      sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
-    }
-
-    // Вычисляемые свойства
-    const sortedTasks = computed(() => {
-      return [...tasks.value].sort((a, b) => {
-        // Для числовых значений
-        if (sortField.value === 'priority') {
-          const priorityOrder = { high: 3, medium: 2, low: 1, none: 0 }
-          const valA = priorityOrder[a.priority]
-          const valB = priorityOrder[b.priority]
-          return sortDirection.value === 'asc' ? valA - valB : valB - valA
-        }
-
-        // Для дат
-        if (sortField.value === 'dueDate' || sortField.value === 'createdAt') {
-          const valA = a[sortField.value]
-            ? new Date(a[sortField.value]).getTime()
-            : 0
-          const valB = b[sortField.value]
-            ? new Date(b[sortField.value]).getTime()
-            : 0
-          return sortDirection.value === 'asc' ? valA - valB : valB - valA
-        }
-
-        // Для строк
-        const valA = a[sortField.value]?.toString().toLowerCase() || ''
-        const valB = b[sortField.value]?.toString().toLowerCase() || ''
-        if (valA < valB) return sortDirection.value === 'asc' ? -1 : 1
-        if (valA > valB) return sortDirection.value === 'asc' ? 1 : -1
-        return 0
-      })
-    })
-
-    const filteredTasks = computed(() => {
-      return sortedTasks.value.filter((task) => {
-        // Фильтрация по статусу
-        if (filterStatus.value === 'active' && task.completed) return false
-        if (filterStatus.value === 'completed' && !task.completed) return false
-        if (
-          filterStatus.value === 'overdue' &&
-          (!isTaskOverdue(task) || task.completed)
-        )
-          return false
-
-        // Поиск по запросу
-        if (searchQuery.value) {
-          const search = searchQuery.value.toLowerCase()
-          const inTitle = task.title.toLowerCase().includes(search)
-          const inTags = task.tags.some((tag) =>
-            tag.toLowerCase().includes(search)
-          )
-          return inTitle || inTags
-        }
-
-        return true
-      })
-    })
-
-    // Статистика
-    const totalTasks = computed(() => tasks.value.length)
-    const activeTasks = computed(
-      () => tasks.value.filter((t) => !t.completed).length
-    )
-    const completedTasks = computed(
-      () => tasks.value.filter((t) => t.completed).length
-    )
-    const overdueTasks = computed(
-      () => tasks.value.filter((t) => isTaskOverdue(t)).length
-    )
-
-    return {
-      tasks,
-      editorVisible,
-      editingTask,
-      confirmDialogVisible,
-      deleteTaskId,
-      newTag,
-      sortField,
-      sortDirection,
-      filterStatus,
-      searchQuery,
-      form,
-      totalTasks,
-      activeTasks,
-      completedTasks,
-      overdueTasks,
-      openEditor,
-      closeEditor,
-      clearDueDate,
-      addTag,
-      removeTag,
-      handleSave,
-      toggleTaskCompletion,
-      confirmDelete,
-      deleteTask,
-      toggleSortDirection,
-      isTaskOverdue,
-      formatDate,
-      getPriorityLabel,
-      sortedTasks,
-      filteredTasks,
-    }
-  },
+const getPriorityLabel = (priority) => {
+  const labels = {
+    high: 'Высокий',
+    medium: 'Средний',
+    low: 'Низкий',
+  }
+  return labels[priority] || ''
 }
 </script>
 
