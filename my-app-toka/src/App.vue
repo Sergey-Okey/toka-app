@@ -31,14 +31,14 @@ body {
   background:
     url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"%3E%3Cpath fill="none" stroke="%2331a974" stroke-width="6" d="M0,300 Q400,150 600,400 T1200,300" /%3E%3C/svg%3E')
       no-repeat center center,
-    linear-gradient(135deg, rgba(0, 0, 0, 0.752) 50%, rgba(0, 0, 0, 0.786) 50%);
+    linear-gradient(135deg, rgb(73, 73, 73) 50%, rgb(73, 73, 73) 50%);
   background-size: cover;
 
   color: #ffffff;
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 1600px;
   padding: 0 100px;
   margin: 0 auto;
 }

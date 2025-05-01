@@ -73,7 +73,7 @@ const cards = [
   .title-block {
     max-width: 100%;
     text-align: center;
-    margin-bottom: 4rem;
+    margin: 7rem 0;
 
     h1 {
       font-size: clamp(2rem, 5vw, 3rem);
@@ -146,7 +146,7 @@ const cards = [
     font-size: clamp(1.5rem, 4vw, 2.5rem);
     font-weight: 700;
     text-align: center;
-    margin-bottom: 2rem;
+    margin-top: 7rem;
     max-width: 100%;
   }
 
