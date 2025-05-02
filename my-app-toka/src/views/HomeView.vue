@@ -25,9 +25,7 @@
       Умная AI-аналитика, простой и информативный Dashboard
     </h2>
 
-    <section class="dashboard-preview">
-      <Dashboard />
-    </section>
+    <section class="dashboard-preview"></section>
   </div>
 </template>
 
@@ -99,6 +97,7 @@ const cards = [
   .card-item {
     width: 320px;
     padding: 2rem 1.5rem;
+    background: #323233;
     backdrop-filter: blur(50px);
     border-radius: 1.2rem;
     border: 1px solid rgba(221, 221, 221, 0.5);

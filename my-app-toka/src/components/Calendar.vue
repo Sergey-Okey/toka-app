@@ -65,15 +65,47 @@
       </div>
     </div>
 
-    <!-- Кнопка для открытия TaskManager -->
-    <button
-      v-if="selectedDate"
-      class="show-tasks-button"
-      @click="showTaskManager"
-    >
-      <i class="material-icons">list_alt</i>
-      Показать все задачи на {{ formattedSelectedDate }}
-    </button>
+    <!-- Панель задач выбранного дня -->
+    <transition name="slide-up">
+      <div
+        v-if="showDayTasks && selectedDayTasks.length > 0"
+        class="day-tasks-panel"
+      >
+        <div class="day-tasks-header">
+          <h3>Задачи на {{ formattedSelectedDate }}</h3>
+          <button class="close-panel" @click="showDayTasks = false">
+            <i class="material-icons">close</i>
+          </button>
+        </div>
+        <div class="day-tasks-list">
+          <div
+            v-for="task in selectedDayTasks"
+            :key="task.id"
+            class="day-task-item"
+            :class="{
+              completed: task.completed,
+              overdue: taskStore.isTaskOverdue(task),
+              'priority-high': task.priority === 'high',
+              'priority-medium': task.priority === 'medium',
+              'priority-low': task.priority === 'low',
+            }"
+            @click="openTaskEditor(task)"
+          >
+            <div class="task-checkbox">
+              <i class="material-icons">
+                {{ task.completed ? 'check_circle' : 'radio_button_unchecked' }}
+              </i>
+            </div>
+            <div class="task-content">
+              <div class="task-title">{{ task.title }}</div>
+              <div class="task-priority">
+                {{ getPriorityLabel(task.priority) }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -88,6 +120,7 @@ const taskStore = useTaskStore()
 // Состояние календаря
 const currentDate = ref(new Date())
 const selectedDate = ref(new Date())
+const showDayTasks = ref(false)
 
 // Дни недели
 const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
@@ -104,6 +137,10 @@ const formattedSelectedDate = computed(() => {
     day: 'numeric',
     month: 'long',
   })
+})
+
+const selectedDayTasks = computed(() => {
+  return taskStore.getTasksForDate(selectedDate.value)
 })
 
 const calendarDays = computed(() => {
@@ -158,7 +195,11 @@ const nextMonth = () => {
 // Обработчики взаимодействия
 const handleDayClick = (date) => {
   selectedDate.value = date
-  showTaskManager(date)
+  if (taskStore.hasTasksForDate(date)) {
+    showDayTasks.value = true
+  } else {
+    showDayTasks.value = false
+  }
 }
 
 const showTaskManager = (date = null) => {
@@ -168,22 +209,43 @@ const showTaskManager = (date = null) => {
   })
 }
 
+const openTaskEditor = (task) => {
+  router.push({
+    path: '/tasks',
+    query: {
+      edit: task.id,
+      date: new Date(task.dueDate).toISOString().split('T')[0],
+    },
+  })
+}
+
 const isSelected = (date) => {
   return date.toDateString() === selectedDate.value.toDateString()
 }
+
+const getPriorityLabel = (priority) => {
+  const labels = {
+    high: 'Высокий',
+    medium: 'Средний',
+    low: 'Низкий',
+  }
+  return labels[priority] || ''
+}
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .calendar-container {
   border-radius: 1.2rem;
   backdrop-filter: blur(50px);
   padding: 1.5rem;
-  border: 1px solid rgba(221, 221, 221, 0.2);
+  border: 1px solid rgba(221, 221, 221, 0.5);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   max-width: 100%;
   margin: 0 auto;
   margin-bottom: 1rem;
   background-color: rgba(40, 40, 42, 0.7);
+  position: relative;
+  overflow: hidden;
 }
 
 .calendar-header {
@@ -373,6 +435,132 @@ const isSelected = (date) => {
   }
 }
 
+/* Панель задач дня */
+.day-tasks-panel {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(40, 40, 42, 0.95);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(221, 221, 221, 0.2);
+  border-radius: 1.2rem 1.2rem 0 0;
+  padding: 1rem;
+  box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.day-tasks-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+
+  h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #ffffff;
+  }
+
+  .close-panel {
+    background: none;
+    border: none;
+    color: #b0b0b0;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(221, 221, 221, 0.1);
+      color: #ffffff;
+    }
+  }
+}
+
+.day-tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.day-task-item {
+  display: flex;
+  align-items: center;
+  padding: 0.8rem;
+  border-radius: 0.8rem;
+  background: rgba(30, 30, 32, 0.7);
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(49, 169, 116, 0.2);
+  }
+
+  &.completed {
+    opacity: 0.7;
+    .task-title {
+      text-decoration: line-through;
+    }
+  }
+
+  &.overdue {
+    border-left: 3px solid #ff3b30;
+  }
+
+  &.priority-high {
+    border-left: 3px solid #ff3b30;
+  }
+
+  &.priority-medium {
+    border-left: 3px solid #ff9500;
+  }
+
+  &.priority-low {
+    border-left: 3px solid #34c759;
+  }
+
+  .task-checkbox {
+    margin-right: 0.8rem;
+
+    .material-icons {
+      color: #31a974;
+      font-size: 1.2rem;
+    }
+  }
+
+  .task-content {
+    flex: 1;
+
+    .task-title {
+      font-size: 0.95rem;
+      color: #ffffff;
+      margin-bottom: 0.2rem;
+    }
+
+    .task-priority {
+      font-size: 0.75rem;
+      color: #b0b0b0;
+    }
+  }
+}
+
+/* Анимации */
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
+}
+.slide-up-enter-from,
+.slide-up-leave-to {
+  transform: translateY(100%);
+  opacity: 0;
+}
+
+/* Адаптив для мобильных устройств */
 @media (max-width: 768px) {
   .calendar-container {
     padding: 1rem;
@@ -405,7 +593,48 @@ const isSelected = (date) => {
       .day-number {
         font-size: 0.8rem;
       }
+
+      .task-indicators .task-indicator {
+        width: 0.4rem;
+        height: 0.4rem;
+      }
     }
+  }
+
+  .show-tasks-button {
+    padding: 0.7rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .day-tasks-panel {
+    padding: 0.8rem;
+    max-height: 50vh;
+  }
+
+  .day-tasks-header h3 {
+    font-size: 1rem;
+  }
+
+  .day-task-item {
+    padding: 0.6rem;
+
+    .task-checkbox .material-icons {
+      font-size: 1rem;
+    }
+
+    .task-content .task-title {
+      font-size: 0.85rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .calendar-grid .calendar-day {
+    aspect-ratio: 1.2;
+  }
+
+  .day-tasks-panel {
+    max-height: 70vh;
   }
 }
 </style>

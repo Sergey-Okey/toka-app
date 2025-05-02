@@ -707,6 +707,7 @@ onMounted(() => {
 }
 
 .productivity-card {
+  background: #323233;
   border-radius: 1rem;
   padding: 1.5rem;
   box-shadow:
@@ -787,6 +788,7 @@ onMounted(() => {
 .stat-card {
   border-radius: 0.75rem;
   padding: 1.2rem;
+  background: #323233;
   backdrop-filter: blur(50px);
   outline: solid 1px #dddddd82;
   cursor: pointer;
@@ -863,6 +865,7 @@ onMounted(() => {
 }
 
 .chart-card {
+  background: #323233;
   border-radius: 1rem;
   padding: 1.5rem;
   backdrop-filter: blur(50px);
@@ -931,6 +934,7 @@ onMounted(() => {
 
 .ai-card {
   backdrop-filter: blur(50px);
+  background: #323233;
   outline: solid 1px #dddddd82;
   border-radius: 1rem;
   padding: 1.5rem;
@@ -993,6 +997,7 @@ onMounted(() => {
       color: #a0aec0;
       padding: 1rem;
       backdrop-filter: blur(50px);
+      background: #323233;
       outline: solid 1px #dddddd82;
       border-radius: 0.75rem;
       margin-top: 1rem;
@@ -1008,6 +1013,7 @@ onMounted(() => {
 
 .time-card {
   backdrop-filter: blur(50px);
+  background: #323233;
   outline: solid 1px #dddddd82;
   border-radius: 1rem;
   padding: 1.5rem;
@@ -1042,6 +1048,7 @@ onMounted(() => {
     align-items: center;
     gap: 1rem;
     background-color: rgba(113, 128, 150, 0.1);
+    background: #323233;
     border-radius: 0.75rem;
     padding: 1rem;
 
