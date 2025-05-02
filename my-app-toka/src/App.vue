@@ -13,9 +13,10 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
+import '@/assets/styles/variables.scss'
 import { defineComponent, onMounted } from 'vue'
-import AppHeader from './components/AppHeader.vue'
+import AppHeader from '@/components/AppHeader.vue'
 
 // Проверка prefers-reduced-motion для анимаций
 const reduceMotion = window.matchMedia(

@@ -630,11 +630,11 @@ const getPriorityLabel = (priority) => {
 
 @media (max-width: 480px) {
   .calendar-grid .calendar-day {
-    aspect-ratio: 1.2;
+    aspect-ratio: 0.8;
   }
 
   .day-tasks-panel {
-    max-height: 70vh;
+    max-height: 80vh;
   }
 }
 </style>

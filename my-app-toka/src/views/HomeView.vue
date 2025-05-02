@@ -29,7 +29,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import Dashboard from '@/components/Dashboard.vue'
 
 const cards = [

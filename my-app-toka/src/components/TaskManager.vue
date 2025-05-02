@@ -565,7 +565,7 @@ const getPriorityLabel = (priority) => {
   margin: 0 auto;
   padding: 2rem;
   color: var(--text-primary);
-  max-width: 1200px;
+  width: 100%;
 
   // Анимации
   .fade-enter-active,

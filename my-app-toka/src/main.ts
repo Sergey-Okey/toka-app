@@ -3,6 +3,7 @@ import App from './App.vue'
 import router from './router'
 import { createPinia } from 'pinia' // Import Pinia
 import 'material-design-icons-iconfont/dist/material-design-icons.css'
+import 'material-icons/iconfont/material-icons.css'
 
 // Создаем приложение
 const app = createApp(App)

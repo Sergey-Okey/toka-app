@@ -110,7 +110,7 @@ function debounce(fn: Function, delay: number) {
 <style lang="scss" scoped>
 .header {
   margin: 20px auto;
-  width: 80%;
+  width: 100%;
   border-radius: 1.2rem;
   display: flex;
   align-items: center;

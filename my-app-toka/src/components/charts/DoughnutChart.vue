@@ -1,50 +1,78 @@
 <template>
-  <canvas ref="chartRef"></canvas>
+  <div class="doughnut-chart-container">
+    <canvas ref="chartCanvas"></canvas>
+  </div>
 </template>
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import Chart from 'chart.js/auto'
+import { Chart } from 'chart.js/auto'
 
 const props = defineProps({
-  data: Object,
-  options: Object,
+  data: {
+    type: Object,
+    required: true,
+  },
+  options: {
+    type: Object,
+    default: () => ({}),
+  },
 })
 
-const chartRef = ref(null)
+const chartCanvas = ref(null)
 let chartInstance = null
 
-onMounted(() => {
-  renderChart()
-})
-
-watch(
-  () => props.data,
-  () => {
+const initChart = () => {
+  if (chartCanvas.value) {
     if (chartInstance) {
-      chartInstance.data = props.data
-      chartInstance.update()
+      chartInstance.destroy()
     }
-  },
-  { deep: true }
-)
 
-const renderChart = () => {
-  if (chartInstance) chartInstance.destroy()
-
-  if (chartRef.value) {
-    chartInstance = new Chart(chartRef.value, {
+    chartInstance = new Chart(chartCanvas.value, {
       type: 'doughnut',
       data: props.data,
-      options: props.options,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'right',
+            labels: {
+              color: 'var(--text-primary)',
+              font: {
+                family: "'Roboto', sans-serif",
+              },
+              padding: 20,
+              usePointStyle: true,
+            },
+          },
+          tooltip: {
+            backgroundColor: 'var(--bg-secondary)',
+            titleColor: 'var(--text-primary)',
+            bodyColor: 'var(--text-primary)',
+            borderColor: 'var(--border)',
+            borderWidth: 1,
+            padding: 12,
+            cornerRadius: 8,
+            displayColors: true,
+          },
+        },
+        cutout: '70%',
+        radius: '90%',
+        ...props.options,
+      },
     })
   }
 }
+
+onMounted(initChart)
+watch(() => props.data, initChart, { deep: true })
 </script>
 
-<style scoped>
-canvas {
-  width: 100% !important;
-  height: 250px !important;
+<style lang="scss" scoped>
+.doughnut-chart-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 </style>
