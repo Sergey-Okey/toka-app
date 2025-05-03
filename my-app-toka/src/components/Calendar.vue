@@ -1,22 +1,14 @@
 <template>
-  <div class="calendar-container">
-    <!-- Заголовок календаря с навигацией -->
+  <div class="calendar">
+    <!-- Заголовок календаря -->
     <div class="calendar-header">
-      <button
-        class="nav-button"
-        @click="prevMonth"
-        aria-label="Предыдущий месяц"
-      >
+      <button class="nav-button" @click="prevMonth">
         <i class="material-icons">chevron_left</i>
       </button>
 
       <h2 class="month-title">{{ currentMonthName }} {{ currentYear }}</h2>
 
-      <button
-        class="nav-button"
-        @click="nextMonth"
-        aria-label="Следующий месяц"
-      >
+      <button class="nav-button" @click="nextMonth">
         <i class="material-icons">chevron_right</i>
       </button>
     </div>
@@ -28,7 +20,7 @@
       </div>
     </div>
 
-    <!-- Сетка календаря -->
+    <!-- Сетка дней -->
     <div class="calendar-grid">
       <div
         v-for="day in calendarDays"
@@ -37,12 +29,11 @@
         :class="{
           'current-month': day.isCurrentMonth,
           today: day.isToday,
-          'has-tasks': taskStore.hasTasksForDate(day.date),
           selected: isSelected(day.date),
+          'has-tasks': taskStore.hasTasksForDate(day.date),
           weekend: day.isWeekend,
         }"
-        @click="handleDayClick(day.date)"
-        :aria-selected="isSelected(day.date)"
+        @click="selectDate(day.date)"
       >
         <div class="day-number">{{ day.dayNumber }}</div>
 
@@ -59,25 +50,19 @@
               'priority-medium': task.priority === 'medium',
               'priority-low': task.priority === 'low',
             }"
-            :title="task.title"
-          ></div>
+          />
         </div>
       </div>
     </div>
 
-    <!-- Панель задач выбранного дня -->
-    <transition name="slide-up">
-      <div
-        v-if="showDayTasks && selectedDayTasks.length > 0"
-        class="day-tasks-panel"
-      >
-        <div class="day-tasks-header">
-          <h3>Задачи на {{ formattedSelectedDate }}</h3>
-          <button class="close-panel" @click="showDayTasks = false">
-            <i class="material-icons">close</i>
-          </button>
-        </div>
-        <div class="day-tasks-list">
+    <!-- Панель задач -->
+    <div class="day-tasks-panel">
+      <div class="day-tasks-header">
+        <h3>Задачи на {{ formattedSelectedDate }}</h3>
+      </div>
+
+      <div class="day-tasks-list">
+        <div v-if="selectedDayTasks.length > 0">
           <div
             v-for="task in selectedDayTasks"
             :key="task.id"
@@ -89,7 +74,7 @@
               'priority-medium': task.priority === 'medium',
               'priority-low': task.priority === 'low',
             }"
-            @click="openTaskEditor(task)"
+            @click="openTask(task)"
           >
             <div class="task-checkbox">
               <i class="material-icons">
@@ -104,8 +89,12 @@
             </div>
           </div>
         </div>
+        <div v-else class="no-tasks-message">
+          <i class="material-icons">event_note</i>
+          <span>Задачи отсутствуют</span>
+        </div>
       </div>
-    </transition>
+    </div>
   </div>
 </template>
 
@@ -117,17 +106,17 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 const taskStore = useTaskStore()
 
-// Состояние календаря
+// Состояние
 const currentDate = ref(new Date())
 const selectedDate = ref(new Date())
-const showDayTasks = ref(false)
 
-// Дни недели
+// Константы
 const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
 // Вычисляемые свойства
 const currentYear = computed(() => currentDate.value.getFullYear())
 const currentMonth = computed(() => currentDate.value.getMonth())
+
 const currentMonthName = computed(() => {
   return currentDate.value.toLocaleDateString('ru-RU', { month: 'long' })
 })
@@ -149,17 +138,17 @@ const calendarDays = computed(() => {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
-  // Получаем первый и последний день месяца
+  // Первый и последний день месяца
   const firstDay = new Date(year, month, 1)
   const lastDay = new Date(year, month + 1, 0)
 
-  // Находим понедельник первой недели календаря
+  // Начало календаря (понедельник первой недели)
   const startDay = new Date(firstDay)
   startDay.setDate(
     firstDay.getDate() - (firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1)
   )
 
-  // Находим воскресенье последней недели календаря
+  // Конец календаря (воскресенье последней недели)
   const endDay = new Date(lastDay)
   endDay.setDate(
     lastDay.getDate() + (7 - (lastDay.getDay() === 0 ? 7 : lastDay.getDay()))
@@ -183,7 +172,7 @@ const calendarDays = computed(() => {
   return days
 })
 
-// Методы навигации
+// Методы
 const prevMonth = () => {
   currentDate.value = new Date(currentYear.value, currentMonth.value - 1, 1)
 }
@@ -192,24 +181,11 @@ const nextMonth = () => {
   currentDate.value = new Date(currentYear.value, currentMonth.value + 1, 1)
 }
 
-// Обработчики взаимодействия
-const handleDayClick = (date) => {
+const selectDate = (date) => {
   selectedDate.value = date
-  if (taskStore.hasTasksForDate(date)) {
-    showDayTasks.value = true
-  } else {
-    showDayTasks.value = false
-  }
 }
 
-const showTaskManager = (date = null) => {
-  router.push({
-    path: '/tasks',
-    query: date ? { date: date.toISOString().split('T')[0] } : {},
-  })
-}
-
-const openTaskEditor = (task) => {
+const openTask = (task) => {
   router.push({
     path: '/tasks',
     query: {
@@ -234,7 +210,7 @@ const getPriorityLabel = (priority) => {
 </script>
 
 <style scoped lang="scss">
-.calendar-container {
+.calendar {
   border-radius: 1.2rem;
   backdrop-filter: blur(50px);
   padding: 1.5rem;
@@ -246,6 +222,11 @@ const getPriorityLabel = (priority) => {
   background-color: rgba(40, 40, 42, 0.7);
   position: relative;
   overflow: hidden;
+
+  @media (max-width: 400px) {
+    padding: 0.8rem;
+    border-radius: 1rem;
+  }
 }
 
 .calendar-header {
@@ -254,11 +235,24 @@ const getPriorityLabel = (priority) => {
   align-items: center;
   margin-bottom: 1.5rem;
 
+  @media (max-width: 400px) {
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
   .month-title {
     font-size: 1.3rem;
     font-weight: 600;
     margin: 0;
     color: #ffffff;
+
+    @media (max-width: 400px) {
+      font-size: 1.1rem;
+      order: -1;
+      width: 100%;
+      text-align: center;
+    }
   }
 
   .nav-button {
@@ -273,6 +267,11 @@ const getPriorityLabel = (priority) => {
     cursor: pointer;
     transition: all 0.3s ease;
 
+    @media (max-width: 400px) {
+      width: 2rem;
+      height: 2rem;
+    }
+
     &:hover {
       background-color: rgba(49, 169, 116, 0.3);
     }
@@ -280,6 +279,10 @@ const getPriorityLabel = (priority) => {
     .material-icons {
       font-size: 1.3rem;
       color: #31a974;
+
+      @media (max-width: 400px) {
+        font-size: 1.1rem;
+      }
     }
   }
 }
@@ -289,12 +292,21 @@ const getPriorityLabel = (priority) => {
   grid-template-columns: repeat(7, 1fr);
   margin-bottom: 1rem;
 
+  @media (max-width: 400px) {
+    margin-bottom: 0.8rem;
+  }
+
   .weekday {
     text-align: center;
     font-size: 1rem;
     font-weight: 500;
     color: #b0b0b0;
     padding: 0.5rem;
+
+    @media (max-width: 400px) {
+      font-size: 0.7rem;
+      padding: 0.3rem;
+    }
   }
 }
 
@@ -302,6 +314,10 @@ const getPriorityLabel = (priority) => {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 0.5rem;
+
+  @media (max-width: 400px) {
+    gap: 0.2rem;
+  }
 
   .calendar-day {
     aspect-ratio: 1;
@@ -315,10 +331,20 @@ const getPriorityLabel = (priority) => {
     border: 1px solid #ffffff27;
     background-color: rgba(30, 30, 32, 0.5);
 
+    @media (max-width: 400px) {
+      padding: 0.2rem;
+      border-radius: 0.6rem;
+    }
+
     .day-number {
       font-size: 1rem;
       font-weight: 500;
       margin-bottom: 0.3rem;
+
+      @media (max-width: 400px) {
+        font-size: 0.7rem;
+        margin-bottom: 0.1rem;
+      }
     }
 
     .task-indicators {
@@ -328,10 +354,19 @@ const getPriorityLabel = (priority) => {
       gap: 0.2rem;
       width: 100%;
 
+      @media (max-width: 400px) {
+        gap: 0.1rem;
+      }
+
       .task-indicator {
         width: 0.5rem;
         height: 0.5rem;
         border-radius: 50%;
+
+        @media (max-width: 400px) {
+          width: 0.3rem;
+          height: 0.3rem;
+        }
 
         &.completed {
           background-color: #34c759;
@@ -411,79 +446,90 @@ const getPriorityLabel = (priority) => {
   }
 }
 
-.show-tasks-button {
-  margin-top: 1rem;
-  padding: 0.8rem 1.5rem;
-  background-color: rgba(49, 169, 116, 0.2);
-  color: #31a974;
-  border: none;
-  border-radius: 0.8rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  width: 100%;
-  justify-content: center;
-
-  &:hover {
-    background-color: rgba(49, 169, 116, 0.3);
-  }
-
-  .material-icons {
-    font-size: 1.2rem;
-  }
-}
-
-/* Панель задач дня */
 .day-tasks-panel {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: rgba(40, 40, 42, 0.95);
-  backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(221, 221, 221, 0.2);
-  border-radius: 1.2rem 1.2rem 0 0;
+  margin-top: 1.5rem;
+  background: rgba(40, 40, 42, 0.9);
+  border-radius: 1rem;
   padding: 1rem;
-  box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.2);
-  z-index: 10;
-  max-height: 60vh;
-  overflow-y: auto;
-}
+  border: 1px solid rgba(221, 221, 221, 0.2);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 
-.day-tasks-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-
-  h3 {
-    margin: 0;
-    font-size: 1.1rem;
-    color: #ffffff;
+  @media (max-width: 400px) {
+    margin-top: 1rem;
+    padding: 0.8rem;
+    border-radius: 0.8rem;
   }
 
-  .close-panel {
-    background: none;
-    border: none;
-    color: #b0b0b0;
-    cursor: pointer;
-    padding: 0.5rem;
-    border-radius: 50%;
-    transition: all 0.2s ease;
+  .day-tasks-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
 
-    &:hover {
-      background: rgba(221, 221, 221, 0.1);
+    @media (max-width: 400px) {
+      margin-bottom: 0.8rem;
+    }
+
+    h3 {
+      margin: 0;
+      font-size: 1.1rem;
       color: #ffffff;
+
+      @media (max-width: 400px) {
+        font-size: 0.9rem;
+      }
     }
   }
-}
 
-.day-tasks-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  .day-tasks-list {
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+
+    @media (max-width: 400px) {
+      max-height: 200px;
+    }
+
+    &::-webkit-scrollbar {
+      width: 6px;
+
+      @media (max-width: 400px) {
+        width: 4px;
+      }
+    }
+
+    &::-webkit-scrollbar-track {
+      background: rgba(221, 221, 221, 0.1);
+      border-radius: 3px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba(221, 221, 221, 0.3);
+      border-radius: 3px;
+    }
+  }
+
+  .no-tasks-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    color: #b0b0b0;
+
+    @media (max-width: 400px) {
+      padding: 0.8rem;
+      font-size: 0.8rem;
+    }
+
+    .material-icons {
+      font-size: 1.2rem;
+
+      @media (max-width: 400px) {
+        font-size: 1rem;
+      }
+    }
+  }
 }
 
 .day-task-item {
@@ -494,6 +540,17 @@ const getPriorityLabel = (priority) => {
   background: rgba(30, 30, 32, 0.7);
   cursor: pointer;
   transition: all 0.2s ease;
+  margin-bottom: 0.5rem;
+
+  @media (max-width: 400px) {
+    padding: 0.6rem;
+    border-radius: 0.6rem;
+    margin-bottom: 0.3rem;
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 
   &:hover {
     background: rgba(49, 169, 116, 0.2);
@@ -525,9 +582,17 @@ const getPriorityLabel = (priority) => {
   .task-checkbox {
     margin-right: 0.8rem;
 
+    @media (max-width: 400px) {
+      margin-right: 0.6rem;
+    }
+
     .material-icons {
       color: #31a974;
       font-size: 1.2rem;
+
+      @media (max-width: 400px) {
+        font-size: 1rem;
+      }
     }
   }
 
@@ -538,103 +603,21 @@ const getPriorityLabel = (priority) => {
       font-size: 0.95rem;
       color: #ffffff;
       margin-bottom: 0.2rem;
+
+      @media (max-width: 400px) {
+        font-size: 0.8rem;
+        margin-bottom: 0.1rem;
+      }
     }
 
     .task-priority {
       font-size: 0.75rem;
       color: #b0b0b0;
-    }
-  }
-}
 
-/* Анимации */
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition:
-    transform 0.3s ease,
-    opacity 0.3s ease;
-}
-.slide-up-enter-from,
-.slide-up-leave-to {
-  transform: translateY(100%);
-  opacity: 0;
-}
-
-/* Адаптив для мобильных устройств */
-@media (max-width: 768px) {
-  .calendar-container {
-    padding: 1rem;
-    border-radius: 1rem;
-  }
-
-  .calendar-header {
-    .month-title {
-      font-size: 1.1rem;
-    }
-
-    .nav-button {
-      width: 2rem;
-      height: 2rem;
-    }
-  }
-
-  .weekdays .weekday {
-    font-size: 0.8rem;
-    padding: 0.3rem;
-  }
-
-  .calendar-grid {
-    gap: 0.3rem;
-
-    .calendar-day {
-      padding: 0.3rem;
-      border-radius: 0.5rem;
-
-      .day-number {
-        font-size: 0.8rem;
-      }
-
-      .task-indicators .task-indicator {
-        width: 0.4rem;
-        height: 0.4rem;
+      @media (max-width: 400px) {
+        font-size: 0.65rem;
       }
     }
-  }
-
-  .show-tasks-button {
-    padding: 0.7rem 1rem;
-    font-size: 0.9rem;
-  }
-
-  .day-tasks-panel {
-    padding: 0.8rem;
-    max-height: 50vh;
-  }
-
-  .day-tasks-header h3 {
-    font-size: 1rem;
-  }
-
-  .day-task-item {
-    padding: 0.6rem;
-
-    .task-checkbox .material-icons {
-      font-size: 1rem;
-    }
-
-    .task-content .task-title {
-      font-size: 0.85rem;
-    }
-  }
-}
-
-@media (max-width: 480px) {
-  .calendar-grid .calendar-day {
-    aspect-ratio: 0.8;
-  }
-
-  .day-tasks-panel {
-    max-height: 80vh;
   }
 }
 </style>
