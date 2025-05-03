@@ -51,7 +51,7 @@ const isLoggedIn = ref(true)
 const isMobile = ref(false)
 
 const checkScreenSize = () => {
-  isMobile.value = window.innerWidth <= 768
+  isMobile.value = window.innerWidth <= 768 // 768px
 }
 
 const toggleMenu = () => {
@@ -109,21 +109,21 @@ function debounce(fn: Function, delay: number) {
 
 <style lang="scss" scoped>
 .header {
-  margin: 20px auto;
+  margin: 1.25rem auto;
   width: 100%;
   border-radius: 1.2rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 20px;
-  backdrop-filter: blur(50px);
-  outline: solid 1px #dddddd82;
+  padding: 0.625rem 1.25rem;
+  backdrop-filter: blur(3.125rem);
+  outline: solid 0.0625rem var(--border);
   position: sticky;
-  top: 10px;
+  top: 0.625rem;
   z-index: 10;
   flex-wrap: wrap;
-  transition: all 0.3s ease;
-  background: #323233;
+  transition: all var(--transition-normal) var(--ease-out);
+  background: var(--bg-primary);
 
   &-container {
     width: 100%;
@@ -135,42 +135,42 @@ function debounce(fn: Function, delay: number) {
   &-right {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: var(--space-md);
   }
 
   .logo-text {
     font-weight: 700;
-    font-size: 1.5rem;
+    font-size: var(--text-xl);
     text-decoration: none;
-    color: #ffffff;
-    transition: color 0.3s ease;
+    color: var(--text-primary);
+    transition: color var(--transition-normal) var(--ease-out);
 
     &:hover {
-      color: #31a974;
+      color: var(--primary);
     }
   }
 
   .burger {
     display: none;
-    background: #323233;
+    background: var(--bg-primary);
     border: none;
-    padding: 0.5rem;
+    padding: var(--space-xs);
     cursor: pointer;
     z-index: 101;
     position: relative;
-    width: 25px;
-    height: 20px;
+    width: 1.5625rem;
+    height: 1.25rem;
 
     &-line {
       display: block;
       position: absolute;
       width: 100%;
-      height: 3px;
-      background: #31a974;
-      border-radius: 10px;
+      height: 0.1875rem;
+      background: var(--primary);
+      border-radius: 0.625rem;
       transition:
-        transform 0.3s ease,
-        opacity 0.3s ease;
+        transform var(--transition-normal) var(--ease-out),
+        opacity var(--transition-normal) var(--ease-out);
       left: 0;
 
       &:nth-child(1) {
@@ -207,22 +207,22 @@ function debounce(fn: Function, delay: number) {
 
   .nav {
     display: flex;
-    gap: 1rem;
+    gap: var(--space-md);
     align-items: center;
     transition:
-      max-height 0.5s ease,
-      padding 0.5s ease;
-    backdrop-filter: blur(50px);
+      max-height var(--transition-slow) var(--ease-out),
+      padding var(--transition-slow) var(--ease-out);
+    backdrop-filter: blur(3.125rem);
 
     .link-header {
       text-decoration: none;
-      color: rgb(155, 154, 154);
-      padding: 5px 10px;
-      border-radius: 0.5rem;
+      color: var(--text-tertiary);
+      padding: var(--space-xs) var(--space-sm);
+      border-radius: var(--radius-sm);
       position: relative;
       transition:
-        color 0.3s ease,
-        width 0.3s ease;
+        color var(--transition-normal) var(--ease-out),
+        width var(--transition-normal) var(--ease-out);
 
       &::after {
         content: '';
@@ -230,14 +230,14 @@ function debounce(fn: Function, delay: number) {
         bottom: 0;
         left: 50%;
         width: 0;
-        height: 2px;
-        background: #31a974;
-        transition: width 0.3s ease;
+        height: 0.125rem;
+        background: var(--primary);
+        transition: width var(--transition-normal) var(--ease-out);
         transform: translateX(-50%);
       }
 
       &:hover {
-        color: #ffffff;
+        color: var(--text-primary);
 
         &::after {
           width: 80%;
@@ -245,7 +245,7 @@ function debounce(fn: Function, delay: number) {
       }
 
       &.router-link-exact-active {
-        color: #ffffff;
+        color: var(--text-primary);
         background-color: rgba(0, 0, 0, 0.5);
 
         &::after {
@@ -254,34 +254,34 @@ function debounce(fn: Function, delay: number) {
       }
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 48rem) {
       flex-direction: column;
       width: 100%;
       max-height: 0;
       overflow: hidden;
       padding: 0;
-      border-radius: 1rem;
-      backdrop-filter: blur(50px);
+      border-radius: var(--radius-md);
+      backdrop-filter: blur(3.125rem);
       position: absolute;
       top: 100%;
       left: 0;
-      margin-top: 10px;
-      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-      transition: all 0.3s ease;
-      gap: 0.5rem;
+      margin-top: var(--space-sm);
+      transition: all var(--transition-normal) var(--ease-out);
+      gap: var(--space-xs);
 
       &.open {
-        max-height: 500px;
-        padding: 1rem 0;
-        backdrop-filter: blur(50px);
+        outline: solid 0.0625rem var(--border);
+        background: var(--bg-primary);
+        max-height: 31.25rem;
+        padding: var(--space-md) 0;
+        backdrop-filter: blur(3.125rem);
       }
     }
   }
 
-  @media (max-width: 768px) {
-    max-width: 100%;
-    top: 5px;
-    padding: 10px 15px;
+  @media (max-width: 48rem) {
+    top: 0.3125rem;
+    padding: 0.625rem 0.9375rem;
 
     .burger {
       display: flex;
@@ -295,7 +295,7 @@ function debounce(fn: Function, delay: number) {
       width: 100%;
       justify-content: center;
       align-items: center;
-      backdrop-filter: blur(50px);
+      backdrop-filter: blur(3.125rem);
     }
   }
 }
