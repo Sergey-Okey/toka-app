@@ -39,12 +39,9 @@ defineEmits(['click'])
 
 <style scoped lang="scss">
 .stats-card {
-  --icon-size: 40px;
-  --icon-bg: var(--bg-secondary);
-  --text-color: var(--text-primary);
-
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
   border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
   padding: 16px;
   display: flex;
   align-items: center;
