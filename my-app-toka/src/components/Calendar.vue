@@ -219,7 +219,7 @@ const getPriorityLabel = (priority) => {
   max-width: 100%;
   margin: 0 auto;
   margin-bottom: 1rem;
-  background-color: rgba(40, 40, 42, 0.7);
+  background: var(--bg-primary);
   position: relative;
   overflow: hidden;
 

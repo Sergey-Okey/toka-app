@@ -76,16 +76,29 @@ body {
   width: 100%;
   min-height: 100vh;
   margin: 0;
-  background:
-    linear-gradient(
-      135deg,
-      map-get($colors, background) 50%,
-      darken(map-get($colors, background), 5%) 50%
-    ),
-    url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"%3E%3Cpath fill="none" stroke="%2331a974" stroke-width="6" d="M0,300 Q400,150 600,400 T1200,300" /%3E%3C/svg%3E')
-      no-repeat center center / cover;
+  background: var(--bg-vector);
   color: map-get($colors, text);
   line-height: 1.6;
+  background-attachment: fixed;
+  background-size: cover;
+  background-size: 100% auto;
+  background-position: center 45%;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+  margin: 0;
+
+  &::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-vector);
+    background-size: cover;
+    background-position: center;
+    z-index: -1;
+  }
 }
 
 .container {
