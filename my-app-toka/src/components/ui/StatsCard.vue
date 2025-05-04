@@ -1,268 +1,114 @@
 <template>
   <div
-    class="stat-card"
-    :class="[type, { clickable: clickable }]"
-    @click="handleClick"
-    :aria-label="`${label}: ${value}`"
-    role="region"
+    class="stats-card"
+    :class="[`type-${type}`, { clickable: $attrs.onClick }]"
+    @click="$attrs.onClick && $emit('click')"
   >
-    <div class="stat-icon" :style="iconStyle">
-      <i class="material-icons-outlined">{{ computedIcon }}</i>
+    <div class="card-icon">
+      <i class="material-icons-outlined">{{ icon }}</i>
     </div>
-    <div class="stat-content">
-      <div class="stat-value">{{ formattedValue }}</div>
-      <div class="stat-label">{{ label }}</div>
-      <div v-if="description" class="stat-description">{{ description }}</div>
-    </div>
-    <div v-if="$slots.action" class="stat-action">
-      <slot name="action"></slot>
+    <div class="card-content">
+      <div class="card-value">{{ value }}</div>
+      <div class="card-label">{{ label }}</div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-
-const props = defineProps({
+defineProps({
   type: {
     type: String,
     default: 'default',
-    validator: (val) =>
-      [
-        'default',
-        'overdue',
-        'high-priority',
-        'today',
-        'completed',
-        'custom',
-      ].includes(val),
   },
   icon: {
     type: String,
-    default: 'info',
+    required: true,
   },
   value: {
-    type: [String, Number],
+    type: Number,
     required: true,
   },
   label: {
     type: String,
     required: true,
   },
-  description: String,
-  clickable: {
-    type: Boolean,
-    default: true,
-  },
-  iconColor: String,
-  iconBg: String,
-  borderColor: String,
-  formatValue: {
-    type: Function,
-    default: (value) => value,
-  },
 })
 
-const emit = defineEmits(['click'])
-
-const computedIcon = computed(() => {
-  const icons = {
-    overdue: 'warning',
-    'high-priority': 'priority_high',
-    today: 'event_available',
-    completed: 'check_circle',
-    default: props.icon,
-  }
-  return icons[props.type] || props.icon
-})
-
-const iconStyle = computed(() => ({
-  '--icon-color': props.iconColor || `var(--${props.type}-color)`,
-  '--icon-bg': props.iconBg || `var(--${props.type}-bg)`,
-}))
-
-const formattedValue = computed(() => props.formatValue(props.value))
-
-const handleClick = () => {
-  if (props.clickable) {
-    emit('click')
-  }
-}
+defineEmits(['click'])
 </script>
 
-<style lang="scss" scoped>
-.stat-card {
-  --border-color: var(--border);
-  --icon-color: var(--primary);
-  --icon-bg: var(--primary-bg);
+<style scoped lang="scss">
+.stats-card {
+  --icon-size: 40px;
+  --icon-bg: var(--bg-secondary);
+  --text-color: var(--text-primary);
 
-  position: relative;
-  background: var(--bg-primary);
-  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
   padding: 16px;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
+  display: flex;
   align-items: center;
   gap: 12px;
-  transition: all 0.3s var(--ease-out);
-  box-shadow: var(--shadow-sm);
-  border-left: 4px solid var(--border-color);
-  min-height: 80px;
+  transition:
+    transform 0.3s var(--ease-out),
+    box-shadow 0.3s var(--ease-out);
 
   &.clickable {
     cursor: pointer;
 
     &:hover {
-      transform: translateY(-3px);
-      box-shadow: var(--shadow-md);
-    }
-
-    &:active {
-      transform: translateY(0);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
   }
 
-  .stat-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: var(--radius-sm);
+  &.type-overdue {
+    --icon-bg: rgba(var(--error-rgb), 0.1);
+    --text-color: var(--error);
+  }
+
+  &.type-high-priority {
+    --icon-bg: rgba(var(--warning-rgb), 0.1);
+    --text-color: var(--warning);
+  }
+
+  &.type-today {
+    --icon-bg: rgba(var(--info-rgb), 0.1);
+    --text-color: var(--info);
+  }
+
+  &.type-completed {
+    --icon-bg: rgba(var(--success-rgb), 0.1);
+    --text-color: var(--success);
+  }
+
+  .card-icon {
+    width: var(--icon-size);
+    height: var(--icon-size);
+    border-radius: 50%;
+    background: var(--icon-bg);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    background: var(--icon-bg);
-    color: var(--icon-color);
-
-    .material-icons-outlined {
-      font-size: 22px;
-    }
+    color: var(--text-color);
   }
 
-  .stat-content {
-    min-width: 0;
-
-    .stat-value {
-      font-size: 1.25rem;
-      font-weight: 700;
-      line-height: 1.2;
-      margin-bottom: 4px;
-      color: var(--text-primary);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .stat-label {
-      font-size: 0.8125rem;
-      color: var(--text-secondary);
-      font-weight: 500;
-      line-height: 1.3;
-    }
-
-    .stat-description {
-      font-size: 0.75rem;
-      color: var(--text-tertiary);
-      margin-top: 4px;
-      line-height: 1.3;
-    }
-  }
-
-  .stat-action {
+  .card-content {
     display: flex;
-    align-items: center;
-    justify-content: flex-end;
+    flex-direction: column;
   }
 
-  // Типы карточек
-  &.overdue {
-    --border-color: var(--error);
-    --icon-color: var(--error);
-    --icon-bg: var(--error-bg);
+  .card-value {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.2;
   }
 
-  &.high-priority {
-    --border-color: var(--warning);
-    --icon-color: var(--warning);
-    --icon-bg: var(--warning-bg);
-  }
-
-  &.today {
-    --border-color: var(--info);
-    --icon-color: var(--info);
-    --icon-bg: var(--info-bg);
-  }
-
-  &.completed {
-    --border-color: var(--success);
-    --icon-color: var(--success);
-    --icon-bg: var(--success-bg);
-  }
-
-  &.custom {
-    // Кастомные стили через пропсы
-  }
-}
-
-// Адаптивные стили
-@media (max-width: 1024px) {
-  .stat-card {
-    padding: 14px;
-    gap: 10px;
-    min-height: 76px;
-
-    .stat-icon {
-      width: 40px;
-      height: 40px;
-
-      .material-icons-outlined {
-        font-size: 20px;
-      }
-    }
-
-    .stat-content {
-      .stat-value {
-        font-size: 1.1rem;
-      }
-    }
-  }
-}
-
-@media (max-width: 768px) {
-  .stat-card {
-    grid-template-columns: auto 1fr;
-    gap: 12px 8px;
-
-    .stat-action {
-      grid-column: 1 / -1;
-      justify-content: flex-start;
-      margin-top: 4px;
-    }
-  }
-}
-
-@media (max-width: 480px) {
-  .stat-card {
-    padding: 12px;
-    min-height: 72px;
-
-    .stat-icon {
-      width: 36px;
-      height: 36px;
-
-      .material-icons-outlined {
-        font-size: 18px;
-      }
-    }
-
-    .stat-content {
-      .stat-value {
-        font-size: 1rem;
-      }
-
-      .stat-label {
-        font-size: 0.75rem;
-      }
-    }
+  .card-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
   }
 }
 </style>

@@ -19,8 +19,8 @@
       <div class="dashboard-column">
         <ProductivityWidget
           :percentage="productivityPercentage"
-          :completed="completedTasksCount"
-          :total="totalTasksCount"
+          :completed="taskStore.completedTasks"
+          :total="taskStore.totalTasks"
           :active-period="activePeriod"
           @period-change="changePeriod"
         />
@@ -29,7 +29,7 @@
           <StatsCard
             type="overdue"
             icon="warning"
-            :value="overdueTasksCount"
+            :value="taskStore.overdueTasks"
             label="Просрочено"
             @click="filterTasks('overdue')"
           />
@@ -50,7 +50,7 @@
           <StatsCard
             type="completed"
             icon="check_circle"
-            :value="completedTasksCount"
+            :value="taskStore.completedTasks"
             label="Выполнено"
             @click="filterTasks('completed')"
           />
@@ -84,6 +84,7 @@
           :loading="loadingAI"
           :insight="productivityInsight"
           :tip="productivityTip"
+          @refresh="analyzeProductivity"
         />
 
         <TimeMetricsWidget
@@ -97,8 +98,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
 import { useTaskStore } from '@/stores/taskStore'
+import { useDate } from '@/composables/useDate'
 import ProductivityWidget from '@/components/widgets/ProductivityWidget.vue'
 import StatsCard from '@/components/ui/StatsCard.vue'
 import ChartWidget from '@/components/widgets/ChartWidget.vue'
@@ -106,9 +108,17 @@ import AnalyticsWidget from '@/components/widgets/AnalyticsWidget.vue'
 import TimeMetricsWidget from '@/components/widgets/TimeMetricsWidget.vue'
 
 const taskStore = useTaskStore()
-const darkMode = ref(false)
+const { formatDate } = useDate()
 
-// Состояния для UI
+// Тема приложения
+const darkMode = ref(false)
+const toggleTheme = () => {
+  darkMode.value = !darkMode.value
+  document.documentElement.classList.toggle('dark-mode', darkMode.value)
+  localStorage.setItem('darkMode', darkMode.value)
+}
+
+// Состояния интерфейса
 const activePeriod = ref('week')
 const completionChartType = ref('week')
 const activeDistributionTab = ref('priority')
@@ -116,10 +126,20 @@ const loadingAI = ref(false)
 const productivityInsight = ref('')
 const productivityTip = ref('')
 
+// Фильтрация задач
+const filterTasks = (type) => {
+  console.log(`Фильтрация задач по: ${type}`)
+}
+
+// Обработчики изменений
+const changePeriod = (period) => {
+  activePeriod.value = period
+}
+
 // Текущая дата
 const currentDate = ref(new Date())
 const currentDateFormatted = computed(() => {
-  return currentDate.value.toLocaleDateString('ru-RU', {
+  return formatDate(currentDate.value, {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -128,46 +148,21 @@ const currentDateFormatted = computed(() => {
 })
 
 // Метрики продуктивности
-const totalTasksCount = computed(() => taskStore.tasks.length)
-const completedTasksCount = computed(() => taskStore.completedTasks)
 const productivityPercentage = computed(() => {
-  return totalTasksCount.value === 0
+  return taskStore.totalTasks === 0
     ? 0
-    : Math.round((completedTasksCount.value / totalTasksCount.value) * 100)
+    : Math.round((taskStore.completedTasks / taskStore.totalTasks) * 100)
 })
 
-const overdueTasksCount = computed(() => taskStore.overdueTasks)
 const highPriorityTasksCount = computed(() => {
   return taskStore.tasks.filter((task) => task.priority === 'high').length
 })
 
 const todayTasksCount = computed(() => {
-  const today = new Date()
-  return taskStore.tasks.filter((task) => {
-    if (!task.dueDate) return false
-    const taskDate = new Date(task.dueDate)
-    return (
-      taskDate.getDate() === today.getDate() &&
-      taskDate.getMonth() === today.getMonth() &&
-      taskDate.getFullYear() === today.getFullYear()
-    )
-  }).length
+  return taskStore.getTasksForDate(new Date()).length
 })
 
 // Временные метрики
-const timeMetrics = computed(() => [
-  {
-    icon: 'timer',
-    value: avgCompletionTime.value,
-    label: 'Среднее время выполнения',
-  },
-  {
-    icon: 'speed',
-    value: fastestCompletionTime.value,
-    label: 'Самая быстрая задача',
-  },
-])
-
 const avgCompletionTime = computed(() => {
   const completedTasks = taskStore.tasks.filter(
     (task) => task.completed && task.timeSpent
@@ -189,6 +184,19 @@ const fastestCompletionTime = computed(() => {
     : Math.min(...completedTasks.map((task) => task.timeSpent))
 })
 
+const timeMetrics = computed(() => [
+  {
+    icon: 'timer',
+    value: `${avgCompletionTime.value} мин`,
+    label: 'Среднее время выполнения',
+  },
+  {
+    icon: 'speed',
+    value: `${fastestCompletionTime.value} мин`,
+    label: 'Самая быстрая задача',
+  },
+])
+
 // Данные для графиков
 const completionTrendData = computed(() => {
   const now = new Date()
@@ -197,7 +205,6 @@ const completionTrendData = computed(() => {
   const createdData = []
 
   if (completionChartType.value === 'week') {
-    // Данные за неделю
     for (let i = 6; i >= 0; i--) {
       const date = new Date()
       date.setDate(now.getDate() - i)
@@ -229,7 +236,6 @@ const completionTrendData = computed(() => {
       )
     }
   } else if (completionChartType.value === 'month') {
-    // Данные за месяц (по неделям)
     const weeksInMonth = Math.ceil(now.getDate() / 7)
     for (let i = 0; i < weeksInMonth; i++) {
       const weekStart = new Date(now.getFullYear(), now.getMonth(), i * 7 + 1)
@@ -257,7 +263,6 @@ const completionTrendData = computed(() => {
       )
     }
   } else {
-    // Данные за год (по месяцам)
     for (let i = 0; i < 12; i++) {
       const monthStart = new Date(now.getFullYear(), i, 1)
       const monthEnd = new Date(now.getFullYear(), i + 1, 0)
@@ -348,7 +353,7 @@ const distributionChartData = computed(() => {
       datasets: [
         {
           data: [
-            taskStore.tasks.filter((t) => t.completed).length,
+            taskStore.completedTasks,
             taskStore.tasks.filter((t) => !t.completed && t.startedAt).length,
             taskStore.tasks.filter((t) => !t.completed && !t.startedAt).length,
           ],
@@ -385,13 +390,12 @@ const productivityByHourData = computed(() => {
   }
 })
 
-// Настройки графиков
-const completionChartOptions = {
+// Настройки графиков (остаются без изменений)
+const chartCommonOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
     legend: {
-      position: 'top',
       labels: {
         color: 'var(--text-primary)',
         font: {
@@ -410,8 +414,17 @@ const completionChartOptions = {
       padding: 12,
       cornerRadius: 'var(--radius-sm)',
       displayColors: true,
-      intersect: false,
-      mode: 'index',
+    },
+  },
+}
+
+const completionChartOptions = {
+  ...chartCommonOptions,
+  plugins: {
+    ...chartCommonOptions.plugins,
+    legend: {
+      ...chartCommonOptions.plugins.legend,
+      position: 'top',
     },
   },
   scales: {
@@ -450,29 +463,12 @@ const completionChartOptions = {
 }
 
 const distributionChartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
+  ...chartCommonOptions,
   plugins: {
+    ...chartCommonOptions.plugins,
     legend: {
+      ...chartCommonOptions.plugins.legend,
       position: 'right',
-      labels: {
-        color: 'var(--text-primary)',
-        font: {
-          family: "'Roboto', sans-serif",
-        },
-        padding: 20,
-        usePointStyle: true,
-      },
-    },
-    tooltip: {
-      backgroundColor: 'var(--bg-secondary)',
-      titleColor: 'var(--text-primary)',
-      bodyColor: 'var(--text-primary)',
-      borderColor: 'var(--border)',
-      borderWidth: 1,
-      padding: 12,
-      cornerRadius: 'var(--radius-sm)',
-      displayColors: true,
     },
   },
   cutout: '70%',
@@ -480,20 +476,11 @@ const distributionChartOptions = {
 }
 
 const productivityByHourOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
+  ...chartCommonOptions,
   plugins: {
+    ...chartCommonOptions.plugins,
     legend: {
       display: false,
-    },
-    tooltip: {
-      backgroundColor: 'var(--bg-secondary)',
-      titleColor: 'var(--text-primary)',
-      bodyColor: 'var(--text-primary)',
-      borderColor: 'var(--border)',
-      borderWidth: 1,
-      padding: 12,
-      cornerRadius: 'var(--radius-sm)',
     },
   },
   scales: {
@@ -528,129 +515,149 @@ const productivityByHourOptions = {
   },
 }
 
-// Методы
-const toggleTheme = () => {
-  darkMode.value = !darkMode.value
-  document.documentElement.classList.toggle('dark-mode', darkMode.value)
-  localStorage.setItem('darkMode', darkMode.value)
-}
-
-const changePeriod = (period) => {
-  activePeriod.value = period
-}
-
-const filterTasks = (type) => {
-  console.log(`Фильтрация задач по: ${type}`)
-  // В реальном приложении можно эмитить событие или изменять store
-}
-
-const analyzeProductivity = () => {
+// Анализ продуктивности
+const analyzeProductivity = async () => {
   loadingAI.value = true
 
-  // Имитация AI анализа с реальной логикой
-  setTimeout(() => {
+  try {
+    // Имитация задержки API
+    await new Promise((resolve) => setTimeout(resolve, 800))
+
     const completionRate = productivityPercentage.value
-    const overdueCount = overdueTasksCount.value
+    const overdueCount = taskStore.overdueTasks
     const highPriorityCount = highPriorityTasksCount.value
 
     if (completionRate >= 80) {
       productivityInsight.value =
         'Отличная продуктивность! Вы выполняете большинство задач в срок.'
-      if (overdueCount > 0) {
-        productivityTip.value = `У вас ${overdueCount} просроченных задач. Попробуйте выполнить их в первую очередь.`
-      } else if (highPriorityCount > 0) {
-        productivityTip.value = `У вас ${highPriorityCount} важных задач. Продолжайте в том же духе!`
-      } else {
-        productivityTip.value =
-          'Попробуйте взяться за более сложные задачи, чтобы развиваться.'
-      }
+      productivityTip.value =
+        overdueCount > 0
+          ? `У вас ${overdueCount} просроченных задач. Попробуйте выполнить их в первую очередь.`
+          : highPriorityCount > 0
+            ? `У вас ${highPriorityCount} важных задач. Продолжайте в том же духе!`
+            : 'Попробуйте взяться за более сложные задачи, чтобы развиваться.'
     } else if (completionRate >= 50) {
       productivityInsight.value =
         'Хороший результат, но есть куда расти. Вы выполняете больше половины задач.'
-      if (overdueCount > 2) {
-        productivityTip.value = `У вас ${overdueCount} просроченных задач. Попробуйте технику Pomodoro для повышения эффективности.`
-      } else {
-        productivityTip.value =
-          'Сосредоточьтесь на задачах с высоким приоритетом для лучших результатов.'
-      }
+      productivityTip.value =
+        overdueCount > 2
+          ? `У вас ${overdueCount} просроченных задач. Попробуйте технику Pomodoro для повышения эффективности.`
+          : 'Сосредоточьтесь на задачах с высоким приоритетом для лучших результатов.'
     } else {
       productivityInsight.value =
         'Продуктивность ниже среднего. Возможно, стоит пересмотреть подход к планированию.'
-      if (overdueCount > 0) {
-        productivityTip.value = `У вас ${overdueCount} просроченных задач. Начните с самых важных и срочных.`
-      } else {
-        productivityTip.value =
-          'Попробуйте начать с небольших задач, чтобы войти в рабочий ритм.'
-      }
+      productivityTip.value =
+        overdueCount > 0
+          ? `У вас ${overdueCount} просроченных задач. Начните с самых важных и срочных.`
+          : 'Попробуйте начать с небольших задач, чтобы войти в рабочий ритм.'
     }
-
+  } catch (error) {
+    console.error('Ошибка анализа продуктивности:', error)
+    productivityInsight.value = 'Не удалось проанализировать продуктивность'
+    productivityTip.value = 'Попробуйте обновить страницу или повторить позже'
+  } finally {
     loadingAI.value = false
-  }, 1500)
+  }
 }
 
 // Инициализация
 onMounted(() => {
+  // Восстановление темы
   darkMode.value = localStorage.getItem('darkMode') === 'true'
   document.documentElement.classList.toggle('dark-mode', darkMode.value)
 
+  // Первоначальный анализ
   analyzeProductivity()
+
+  // Автоматический анализ при изменении задач
   watch(() => taskStore.tasks, analyzeProductivity, { deep: true })
+
+  // Обновление даты каждую минуту
+  const dateUpdateInterval = setInterval(() => {
+    currentDate.value = new Date()
+  }, 60000)
+
+  // Очистка при размонтировании
+  onUnmounted(() => clearInterval(dateUpdateInterval))
 })
 </script>
 
 <style scoped lang="scss">
 .dashboard {
   width: 100%;
-  max-width: 1800px;
   margin: 0 auto;
-  padding: 24px;
   min-height: 100vh;
-  transition: background-color 0.3s var(--ease-out);
+  transition:
+    background-color 0.3s var(--ease-out),
+    color 0.3s var(--ease-out);
 }
 
 .dashboard-header {
+  padding: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 32px;
-  animation: fadeIn 0.6s var(--ease-out);
+  margin-bottom: var(--dashboard-gap);
+  gap: 16px;
+  animation: fadeIn 0.6s var(--ease-out) both;
+
+  @media (max-width: 767px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 
   .dashboard-title {
-    font-size: 2rem;
+    font-size: clamp(1.5rem, 4vw, 2rem);
     font-weight: 600;
     margin: 0;
-    background: linear-gradient(90deg, var(--primary), var(--secondary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    line-height: 1.2;
   }
 
   .dashboard-actions {
     display: flex;
     align-items: center;
     gap: 20px;
+    flex-shrink: 0;
+
+    @media (max-width: 767px) {
+      width: 100%;
+      justify-content: space-between;
+    }
   }
 
   .dashboard-date {
     font-size: 1rem;
     color: var(--text-secondary);
     font-weight: 500;
+    white-space: nowrap;
   }
 
   .theme-toggle {
     background: none;
-    border: none;
+    border: 1px solid var(--border-dark);
     color: var(--text-secondary);
     cursor: pointer;
     padding: 8px;
     border-radius: 50%;
-    transition: all 0.3s var(--ease-out);
+    transition:
+      background-color 0.3s var(--ease-out),
+      color 0.3s var(--ease-out),
+      transform 0.2s var(--ease-out);
     display: flex;
     align-items: center;
     justify-content: center;
+    aspect-ratio: 1;
 
     &:hover {
-      background-color: var(--bg-secondary);
+      background-color: var(--primary);
       color: var(--text-primary);
+    }
+
+    &:active {
+      transform: scale(0.92);
     }
 
     .material-icons-outlined {
@@ -662,66 +669,97 @@ onMounted(() => {
 .dashboard-content {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 24px;
+  gap: var(--dashboard-gap);
 
-  @media (min-width: 1024px) {
-    grid-template-columns: 350px 1fr 350px;
+  // Планшет (вертикально)
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
   }
 
-  @media (min-width: 768px) and (max-width: 1023px) {
-    grid-template-columns: 1fr 1fr;
+  // Десктоп
+  @media (min-width: 1200px) {
+    grid-template-columns: 350px 1fr 350px;
   }
 }
 
 .dashboard-column {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--dashboard-gap);
+
+  // Центральная колонка занимает больше места на планшетах
+  @media (min-width: 768px) and (max-width: 1199px) {
+    &:nth-child(2) {
+      grid-column: span 2;
+    }
+  }
 }
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(var(--stats-card-min), 1fr));
   gap: 16px;
-}
 
-@media (max-width: 767px) {
-  .dashboard-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .dashboard-actions {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .stats-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-@media (max-width: 480px) {
-  .dashboard {
-    padding: 16px;
-  }
-
-  .dashboard-title {
-    font-size: 1.5rem !important;
-  }
-
-  .stats-grid {
+  @media (max-width: 480px) {
     grid-template-columns: 1fr;
   }
 }
 
+// Анимации
 @keyframes fadeIn {
   from {
     opacity: 0;
+    transform: translateY(-10px);
   }
   to {
     opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Плавное появление колонок
+.dashboard-column {
+  &:nth-child(1) {
+    animation: slideInLeft 0.5s var(--ease-out) 0.1s both;
+  }
+  &:nth-child(2) {
+    animation: slideInUp 0.5s var(--ease-out) 0.2s both;
+  }
+  &:nth-child(3) {
+    animation: slideInRight 0.5s var(--ease-out) 0.3s both;
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 </style>

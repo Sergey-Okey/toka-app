@@ -1,51 +1,57 @@
 <template>
-  <div class="productivity-widget widget">
+  <div class="productivity-widget widget-card">
     <div class="widget-header">
-      <h3 class="widget-title">
-        <i class="material-icons-outlined">trending_up</i>
-        Ваша продуктивность
-      </h3>
+      <h2 class="widget-title">Продуктивность</h2>
       <div class="period-selector">
         <button
           v-for="period in periods"
           :key="period.value"
-          @click="$emit('period-change', period.value)"
-          :class="{ active: activePeriod === period.value }"
           class="period-btn"
+          :class="{ active: activePeriod === period.value }"
+          @click="$emit('period-change', period.value)"
         >
           {{ period.label }}
         </button>
       </div>
     </div>
+
     <div class="productivity-content">
-      <div class="progress-wrapper">
-        <div class="progress-container">
-          <ProgressCircle
-            :percentage="percentage"
-            :color="computedColor"
-            :stroke-width="8"
-            :size="progressSize"
+      <div class="circular-progress">
+        <svg class="progress-ring" viewBox="0 0 100 100">
+          <circle
+            class="progress-ring-bg"
+            stroke="var(--border)"
+            stroke-width="8"
+            fill="transparent"
+            r="40"
+            cx="50"
+            cy="50"
           />
-          <div class="progress-label" :style="{ color: computedColor }">
-            {{ percentage }}%
-          </div>
-        </div>
+          <circle
+            class="progress-ring-fill"
+            :stroke="percentageColor"
+            stroke-width="8"
+            stroke-linecap="round"
+            fill="transparent"
+            r="40"
+            cx="50"
+            cy="50"
+            :stroke-dasharray="circumference"
+            :stroke-dashoffset="dashOffset"
+          />
+        </svg>
+        <div class="progress-value">{{ percentage }}%</div>
       </div>
-      <div class="stats-wrapper">
-        <div class="tasks-count">
-          <div class="count-item">
-            <span class="count-value completed">{{ completed }}</span>
-            <span class="count-label">выполнено</span>
-          </div>
-          <div class="count-separator">из</div>
-          <div class="count-item">
-            <span class="count-value total">{{ total }}</span>
-            <span class="count-label">всего</span>
-          </div>
+
+      <div class="productivity-stats">
+        <div class="stat-item">
+          <span class="stat-number">{{ completed }}</span>
+          <span class="stat-label">Выполнено</span>
         </div>
-        <div v-if="showTrend" class="trend-indicator" :class="trendDirection">
-          <i class="material-icons-outlined">{{ trendIcon }}</i>
-          <span>{{ Math.abs(trendPercentage) }}%</span>
+        <div class="divider"></div>
+        <div class="stat-item">
+          <span class="stat-number">{{ total }}</span>
+          <span class="stat-label">Всего задач</span>
         </div>
       </div>
     </div>
@@ -54,304 +60,152 @@
 
 <script setup>
 import { computed } from 'vue'
-import ProgressCircle from '@/components/ui/ProgressCircle.vue'
 
 const props = defineProps({
   percentage: {
     type: Number,
-    required: true,
-    validator: (value) => value >= 0 && value <= 100,
+    default: 0,
   },
   completed: {
     type: Number,
-    required: true,
+    default: 0,
   },
   total: {
     type: Number,
-    required: true,
+    default: 0,
   },
   activePeriod: {
     type: String,
     default: 'week',
   },
-  color: {
-    type: String,
-    default: '',
-  },
-  periods: {
-    type: Array,
-    default: () => [
-      { label: 'День', value: 'day' },
-      { label: 'Неделя', value: 'week' },
-      { label: 'Месяц', value: 'month' },
-    ],
-  },
-  trendPercentage: {
-    type: Number,
-    default: 0,
-  },
-  showTrend: {
-    type: Boolean,
-    default: true,
-  },
 })
 
-const computedColor = computed(() => props.color || 'var(--primary)')
-const progressSize = computed(() => {
-  if (window.innerWidth < 480) return 120
-  if (window.innerWidth < 768) return 140
-  return 160
-})
+const emit = defineEmits(['period-change'])
 
-const trendDirection = computed(() => {
-  if (props.trendPercentage > 0) return 'positive'
-  if (props.trendPercentage < 0) return 'negative'
-  return 'neutral'
-})
+const periods = [
+  { value: 'day', label: 'День' },
+  { value: 'week', label: 'Неделя' },
+  { value: 'month', label: 'Месяц' },
+]
 
-const trendIcon = computed(() => {
-  switch (trendDirection.value) {
-    case 'positive':
-      return 'trending_up'
-    case 'negative':
-      return 'trending_down'
-    default:
-      return 'remove'
-  }
+const circumference = 2 * Math.PI * 40
+const dashOffset = computed(
+  () => circumference - (props.percentage / 100) * circumference
+)
+
+const percentageColor = computed(() => {
+  if (props.percentage >= 80) return 'var(--success)'
+  if (props.percentage >= 50) return 'var(--warning)'
+  return 'var(--error)'
 })
 </script>
 
-<style lang="scss" scoped>
+<style scoped lang="scss">
 .productivity-widget {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
+  --progress-size: 120px;
 
   .widget-header {
     display: flex;
-    flex-direction: column;
-    gap: 16px;
-    margin-bottom: 24px;
-
-    @media (min-width: 640px) {
-      flex-direction: row;
-      align-items: center;
-      justify-content: space-between;
-    }
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
   }
 
-  .widget-title {
+  .period-selector {
     display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 0;
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    line-height: 1.3;
+    gap: 8px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    padding: 4px;
+  }
 
-    .material-icons-outlined {
-      color: var(--primary);
-      font-size: 1.25rem;
-      flex-shrink: 0;
+  .period-btn {
+    border: none;
+    background: transparent;
+    padding: 6px 12px;
+    border-radius: var(--radius-md);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s var(--ease-out);
+    color: var(--text-secondary);
+
+    &.active {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    &:hover:not(.active) {
+      background: var(--bg-tertiary);
     }
   }
 
   .productivity-content {
     display: flex;
-    flex-direction: column;
     align-items: center;
     gap: 24px;
-    flex: 1;
-    justify-content: center;
 
-    @media (min-width: 640px) {
-      flex-direction: row;
-      align-items: center;
-      gap: 32px;
+    @media (max-width: 480px) {
+      flex-direction: column;
     }
   }
 
-  .progress-wrapper {
+  .circular-progress {
     position: relative;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-  }
-
-  .progress-container {
-    position: relative;
-    width: v-bind('progressSize + "px"');
-    height: v-bind('progressSize + "px"');
+    width: var(--progress-size);
+    height: var(--progress-size);
     flex-shrink: 0;
   }
 
-  .progress-label {
+  .progress-ring {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+
+  .progress-value {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 2rem;
-    font-weight: 700;
-    line-height: 1;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
 
-    @media (min-width: 640px) {
-      font-size: 2.25rem;
-    }
+  .productivity-stats {
+    flex-grow: 1;
+    display: flex;
+    justify-content: space-around;
+    gap: 16px;
 
-    @media (min-width: 1024px) {
-      font-size: 2.5rem;
+    @media (max-width: 480px) {
+      width: 100%;
     }
   }
 
-  .stats-wrapper {
+  .stat-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 16px;
-    width: 100%;
-
-    @media (min-width: 640px) {
-      align-items: flex-start;
-      max-width: 200px;
-    }
+    gap: 4px;
   }
 
-  .tasks-count {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-    justify-content: center;
-
-    @media (min-width: 640px) {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 6px;
-    }
-  }
-
-  .count-item {
-    display: flex;
-    align-items: baseline;
-    gap: 6px;
-  }
-
-  .count-separator {
-    color: var(--text-secondary);
-    font-size: 0.875rem;
-
-    @media (min-width: 640px) {
-      display: none;
-    }
-  }
-
-  .count-value {
+  .stat-number {
+    font-size: 1.5rem;
     font-weight: 600;
-    font-size: 1.25rem;
-    line-height: 1;
-
-    &.completed {
-      color: var(--success);
-    }
-
-    &.total {
-      color: var(--info);
-    }
+    color: var(--text-primary);
   }
 
-  .count-label {
-    font-size: 0.875rem;
+  .stat-label {
+    font-size: 0.9rem;
     color: var(--text-secondary);
+    text-align: center;
   }
 
-  .trend-indicator {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    padding: 6px 10px;
-    border-radius: var(--radius-sm);
-    width: fit-content;
-
-    &.positive {
-      background-color: rgba(var(--success-rgb), 0.1);
-      color: var(--success);
-
-      .material-icons-outlined {
-        color: var(--success);
-      }
-    }
-
-    &.negative {
-      background-color: rgba(var(--error-rgb), 0.1);
-      color: var(--error);
-
-      .material-icons-outlined {
-        color: var(--error);
-      }
-    }
-
-    &.neutral {
-      background-color: var(--bg-secondary);
-      color: var(--text-secondary);
-    }
-
-    .material-icons-outlined {
-      font-size: 1.125rem;
-    }
-  }
-}
-
-.period-selector {
-  display: flex;
-  gap: 6px;
-  background-color: var(--bg-secondary);
-  border-radius: var(--radius-sm);
-  padding: 4px;
-  width: 100%;
-  justify-content: center;
-  flex-wrap: wrap;
-
-  @media (min-width: 640px) {
-    width: auto;
-    flex-wrap: nowrap;
-  }
-}
-
-.period-btn {
-  padding: 6px 12px;
-  border-radius: calc(var(--radius-sm) - 2px);
-  background-color: transparent;
-  color: var(--text-secondary);
-  border: none;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s var(--ease-out);
-  white-space: nowrap;
-  flex: 1;
-  text-align: center;
-  min-width: 60px;
-
-  &:hover {
-    background-color: var(--bg-tertiary);
-  }
-
-  &.active {
-    background-color: var(--primary);
-    color: white;
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--primary);
-    outline-offset: 2px;
-  }
-
-  @media (min-width: 640px) {
-    flex: none;
-    padding: 6px 12px;
+  .divider {
+    width: 1px;
+    background: var(--border);
   }
 }
 </style>
