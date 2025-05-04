@@ -7,8 +7,8 @@
           v-for="period in periods"
           :key="period.value"
           class="period-btn"
-          :class="{ active: activePeriod === period.value }"
-          @click="$emit('period-change', period.value)"
+          :class="{ active: activePeriodLocal === period.value }"
+          @click="changePeriod(period.value)"
         >
           {{ period.label }}
         </button>
@@ -59,7 +59,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 const props = defineProps({
   percentage: {
@@ -81,6 +81,22 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['period-change'])
+
+const activePeriodLocal = ref(props.activePeriod)
+
+watch(
+  () => props.activePeriod,
+  (newVal) => {
+    activePeriodLocal.value = newVal
+  }
+)
+
+const changePeriod = (value) => {
+  if (activePeriodLocal.value !== value) {
+    activePeriodLocal.value = value
+    emit('period-change', value)
+  }
+}
 
 const periods = [
   { value: 'day', label: 'День' },
@@ -106,25 +122,43 @@ const percentageColor = computed(() => {
 
   .widget-header {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
+    gap: 12px;
     margin-bottom: 20px;
+
+    @media (max-width: 480px) {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+
+  .widget-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--text-primary);
   }
 
   .period-selector {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
     background: var(--bg-secondary);
     border-radius: var(--radius-lg);
     padding: 4px;
+
+    @media (max-width: 480px) {
+      width: 100%;
+    }
   }
 
   .period-btn {
     border: none;
     background: transparent;
-    padding: 6px 12px;
+    padding: 8px 16px;
     border-radius: var(--radius-md);
-    font-size: 0.85rem;
+    font-size: 1rem;
     cursor: pointer;
     transition: all 0.3s var(--ease-out);
     color: var(--text-secondary);
@@ -132,11 +166,16 @@ const percentageColor = computed(() => {
     &.active {
       background: var(--bg-tertiary);
       color: var(--text-primary);
-      font-weight: 500;
+      font-weight: 600;
     }
 
     &:hover:not(.active) {
       background: var(--bg-tertiary);
+    }
+
+    @media (max-width: 480px) {
+      flex: 1 1 auto;
+      text-align: center;
     }
   }
 
@@ -147,6 +186,7 @@ const percentageColor = computed(() => {
 
     @media (max-width: 480px) {
       flex-direction: column;
+      gap: 16px;
     }
   }
 
@@ -155,6 +195,10 @@ const percentageColor = computed(() => {
     width: var(--progress-size);
     height: var(--progress-size);
     flex-shrink: 0;
+
+    @media (max-width: 380px) {
+      --progress-size: 90px;
+    }
   }
 
   .progress-ring {
@@ -168,9 +212,13 @@ const percentageColor = computed(() => {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 1.5rem;
-    font-weight: 600;
+    font-size: 1.6rem;
+    font-weight: 700;
     color: var(--text-primary);
+
+    @media (max-width: 380px) {
+      font-size: 1.3rem;
+    }
   }
 
   .productivity-stats {
@@ -192,9 +240,13 @@ const percentageColor = computed(() => {
   }
 
   .stat-number {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     font-weight: 600;
     color: var(--text-primary);
+
+    @media (max-width: 380px) {
+      font-size: 1.2rem;
+    }
   }
 
   .stat-label {
