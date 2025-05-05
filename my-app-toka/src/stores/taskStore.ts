@@ -7,8 +7,12 @@ export interface Task {
   title: string
   completed: boolean
   dueDate?: string // ISO-строка
+  completedDate?: string // Дата завершения
+  category?: string // Категория задачи
+  priority?: string // Приоритет задачи
 }
 
+// Определение хранилища задач
 export const useTaskStore = defineStore('tasks', () => {
   // Безопасный парсинг из localStorage
   let initialTasks: Task[] = []
@@ -48,6 +52,7 @@ export const useTaskStore = defineStore('tasks', () => {
     const task = tasks.value.find((t) => t.id === taskId)
     if (task) {
       task.completed = !task.completed
+      task.completedDate = task.completed ? new Date().toISOString() : undefined
       saveTasks()
     }
   }
@@ -99,12 +104,60 @@ export const useTaskStore = defineStore('tasks', () => {
     () => tasks.value.filter((t) => isTaskOverdue(t)).length
   )
 
+  // Среднее время на выполнение задачи (в минутах)
+  const avgTimeToComplete = computed(() => {
+    const completedTasksList = tasks.value.filter(
+      (task) => task.completed && task.dueDate && task.completedDate
+    )
+    if (completedTasksList.length === 0) return 0
+    const totalTime = completedTasksList.reduce((acc, task) => {
+      const dueDate = task.dueDate ? new Date(task.dueDate) : new Date()
+      const completedDate = task.completedDate
+        ? new Date(task.completedDate)
+        : new Date()
+      return acc + (completedDate.getTime() - dueDate.getTime())
+    }, 0)
+    return totalTime / completedTasksList.length / (1000 * 60) // Среднее время в минутах
+  })
+
+  // Максимальное время выполнения задачи (в минутах)
+  const maxTimeToComplete = computed(() => {
+    const completedTasksList = tasks.value.filter(
+      (task) => task.completed && task.dueDate && task.completedDate
+    )
+    if (completedTasksList.length === 0) return 0
+    const times = completedTasksList.map((task) => {
+      const dueDate = task.dueDate ? new Date(task.dueDate) : new Date()
+      const completedDate = task.completedDate
+        ? new Date(task.completedDate)
+        : new Date()
+      return (completedDate.getTime() - dueDate.getTime()) / (1000 * 60) // В минутах
+    })
+    return Math.max(...times)
+  })
+
+  // Категории задач
+  const taskCategories = computed(() => {
+    const categories = new Set(tasks.value.map((task) => task.category))
+    return Array.from(categories)
+  })
+
+  // Приоритеты задач
+  const taskPriorities = computed(() => {
+    const priorities = new Set(tasks.value.map((task) => task.priority))
+    return Array.from(priorities)
+  })
+
   return {
     tasks,
     totalTasks,
     activeTasks,
     completedTasks,
     overdueTasks,
+    avgTimeToComplete,
+    maxTimeToComplete,
+    taskCategories,
+    taskPriorities,
     saveTask,
     deleteTask,
     toggleTaskCompletion,
