@@ -34,6 +34,16 @@
           >
         </nav>
 
+        <button
+          class="theme-toggle"
+          @click="toggleTheme"
+          aria-label="Toggle theme"
+        >
+          <i class="material-icons-outlined">
+            {{ darkMode ? 'light_mode' : 'dark_mode' }}
+          </i>
+        </button>
+
         <Button v-if="isLoggedIn" class="header-button" />
       </div>
     </div>
@@ -49,16 +59,20 @@ const route = useRoute()
 const isOpen = ref(false)
 const isLoggedIn = ref(true)
 const isMobile = ref(false)
+const darkMode = ref(false)
 
+// Проверка размера экрана
 const checkScreenSize = () => {
-  isMobile.value = window.innerWidth <= 768 // 768px
+  isMobile.value = window.innerWidth <= 768
 }
 
+// Переключение меню
 const toggleMenu = () => {
   isOpen.value = !isOpen.value
   updateBodyOverflow()
 }
 
+// Закрытие меню
 const closeMenu = () => {
   if (isOpen.value) {
     isOpen.value = false
@@ -66,16 +80,35 @@ const closeMenu = () => {
   }
 }
 
+// Управление overflow body
 const updateBodyOverflow = () => {
   document.body.style.overflow = isOpen.value ? 'hidden' : ''
 }
 
+// Обработчик клика по навигации
 const handleNavClick = (event: Event) => {
   if ((event.target as HTMLElement).closest('.link-header')) {
     closeMenu()
   }
 }
 
+// Переключение темы
+const toggleTheme = () => {
+  darkMode.value = !darkMode.value
+  updateTheme()
+}
+
+// Обновление темы
+const updateTheme = () => {
+  if (darkMode.value) {
+    document.documentElement.classList.remove('light-mode')
+  } else {
+    document.documentElement.classList.add('light-mode')
+  }
+  localStorage.setItem('darkMode', darkMode.value.toString())
+}
+
+// Дебаунс ресайза
 const handleResize = debounce(() => {
   checkScreenSize()
   if (!isMobile.value) {
@@ -83,21 +116,32 @@ const handleResize = debounce(() => {
   }
 }, 100)
 
+// Следим за изменением маршрута
 watch(
   () => route.path,
   () => closeMenu()
 )
 
+// Инициализация при монтировании
 onMounted(() => {
   checkScreenSize()
   window.addEventListener('resize', handleResize)
+
+  // Восстановление темы
+  const savedMode = localStorage.getItem('darkMode')
+  if (savedMode !== null) {
+    darkMode.value = savedMode === 'true'
+    updateTheme()
+  }
 })
 
+// Очистка при размонтировании
 onBeforeUnmount(() => {
   window.removeEventListener('resize', handleResize)
   document.body.style.overflow = ''
 })
 
+// Функция дебаунса
 function debounce(fn: Function, delay: number) {
   let timeoutId: number
   return (...args: any[]) => {
@@ -279,6 +323,30 @@ function debounce(fn: Function, delay: number) {
     }
   }
 
+  .theme-toggle {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.3s var(--ease-out);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+
+    &:hover {
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+
+    i {
+      font-size: 1.5rem;
+    }
+  }
+
   @media (max-width: 48rem) {
     top: 0.3125rem;
     padding: 0.625rem 0.9375rem;
@@ -296,6 +364,15 @@ function debounce(fn: Function, delay: number) {
       justify-content: center;
       align-items: center;
       backdrop-filter: blur(3.125rem);
+    }
+
+    .theme-toggle {
+      width: 36px;
+      height: 36px;
+
+      i {
+        font-size: 1.2rem;
+      }
     }
   }
 }

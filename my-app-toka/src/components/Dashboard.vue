@@ -5,11 +5,6 @@
       <h1 class="dashboard-title">Моя продуктивность</h1>
       <div class="dashboard-actions">
         <div class="dashboard-date">{{ currentDateFormatted }}</div>
-        <button class="theme-toggle" @click="toggleTheme">
-          <i class="material-icons-outlined">
-            {{ darkMode ? 'light_mode' : 'dark_mode' }}
-          </i>
-        </button>
       </div>
     </div>
 
