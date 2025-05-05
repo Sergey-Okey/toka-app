@@ -15,22 +15,21 @@
 
 <script setup>
 import '@/assets/styles/variables.scss'
-import { defineComponent, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import AppHeader from '@/components/AppHeader.vue'
 
-// Проверка prefers-reduced-motion для анимаций
+// Проверка prefers-reduced-motion
 const reduceMotion = window.matchMedia(
   '(prefers-reduced-motion: reduce)'
 ).matches
 
-// Хук для обработки глобальных событий
 onMounted(() => {
   console.log('App mounted')
 })
 </script>
 
 <style lang="scss">
-// Переменные для медиа-запросов
+// Переменные
 $breakpoints: (
   xl: 1200px,
   lg: 992px,
@@ -38,7 +37,6 @@ $breakpoints: (
   sm: 480px,
 );
 
-// Переменные для цветов
 $colors: (
   primary: #31a974,
   background: #494949,
@@ -76,29 +74,26 @@ body {
   width: 100%;
   min-height: 100vh;
   margin: 0;
-  background: var(--bg-vector);
   color: map-get($colors, text);
   line-height: 1.6;
-  background-attachment: fixed;
+  background: none;
+  position: relative;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-vector);
   background-size: cover;
-  background-size: 100% auto;
   background-position: center 45%;
   background-repeat: no-repeat;
-  min-height: 100vh;
-  margin: 0;
-
-  &::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--bg-vector);
-    background-size: cover;
-    background-position: center;
-    z-index: -1;
-  }
+  z-index: -1;
+  will-change: transform;
 }
 
 .container {
@@ -123,7 +118,7 @@ body {
   margin-bottom: 1.5rem;
 }
 
-// Анимации
+// Переходы
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s ease;
@@ -134,7 +129,7 @@ body {
   opacity: 0;
 }
 
-// Миксины для медиа-запросов
+// Миксин
 @mixin respond-to($breakpoint) {
   @if map-has-key($breakpoints, $breakpoint) {
     @media (max-width: map-get($breakpoints, $breakpoint)) {
@@ -145,7 +140,7 @@ body {
   }
 }
 
-// Адаптивность с использованием миксинов
+// Адаптивность
 @include respond-to(xl) {
   .container {
     padding: 0 50px;
@@ -186,7 +181,7 @@ body {
   }
 }
 
-// Отключение анимаций для пользователей с prefers-reduced-motion
+// prefers-reduced-motion
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
