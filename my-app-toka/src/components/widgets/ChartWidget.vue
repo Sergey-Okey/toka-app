@@ -32,15 +32,13 @@
       </div>
     </div>
 
-    <div class="chart-container">
-      <canvas ref="chartCanvas"></canvas>
-    </div>
+    <div class="chart-container" ref="chartContainer"></div>
   </div>
 </template>
 
 <script setup>
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
-import { Chart } from 'chart.js/auto'
+import * as echarts from 'echarts'
 
 const props = defineProps({
   title: String,
@@ -51,32 +49,156 @@ const props = defineProps({
   activeTab: String,
   timeRangeOptions: Array,
   timeRange: { type: String, default: 'week' },
+  colors: {
+    type: Array,
+    default: () => [
+      '#5470C6',
+      '#91CC75',
+      '#EE6666',
+      '#FAC858',
+      '#73C0DE',
+      '#3BA272',
+      '#FC8452',
+      '#9A60B4',
+    ],
+  },
 })
 
 const emit = defineEmits(['tab-change', 'time-range-change'])
 
-const chartCanvas = ref(null)
+const chartContainer = ref(null)
 const chartInstance = ref(null)
 const selectedRange = ref(props.timeRange)
 
 const initChart = () => {
-  if (chartInstance.value) chartInstance.value.destroy()
+  if (chartInstance.value) {
+    chartInstance.value.dispose()
+  }
 
-  chartInstance.value = new Chart(chartCanvas.value.getContext('2d'), {
-    type: props.type,
-    data: props.data,
-    options: {
-      ...props.options,
-      responsive: true,
-      maintainAspectRatio: false,
+  if (!chartContainer.value || !props.data) return
+
+  chartInstance.value = echarts.init(chartContainer.value)
+
+  const defaultOptions = {
+    color: props.colors,
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'shadow',
+      },
+      formatter: function (params) {
+        let result = params[0].axisValue + '<br/>'
+        params.forEach((item) => {
+          result += `
+            <span style="display:inline-block;margin-right:5px;border-radius:10px;
+              width:9px;height:9px;background-color:${item.color}"></span>
+            ${item.seriesName}: <strong>${item.value}</strong><br/>
+          `
+        })
+        return result
+      },
     },
-  })
+    legend: {
+      data: props.data.series?.map((item) => item.name) || [],
+      bottom: 0,
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '15%',
+      top: '15%',
+      containLabel: true,
+    },
+    xAxis: {
+      type: 'category',
+      data: props.data.labels || [],
+      axisLine: {
+        lineStyle: {
+          color: '#D9D9D9',
+        },
+      },
+      axisLabel: {
+        color: '#666',
+      },
+    },
+    yAxis: {
+      type: 'value',
+      axisLine: {
+        lineStyle: {
+          color: '#D9D9D9',
+        },
+      },
+      axisLabel: {
+        color: '#666',
+      },
+      splitLine: {
+        lineStyle: {
+          color: '#F0F0F0',
+          type: 'dashed',
+        },
+      },
+    },
+    series: (props.data.series || []).map((series) => ({
+      ...series,
+      type: props.type,
+      smooth: true,
+      symbol: 'circle',
+      symbolSize: 6,
+      lineStyle: {
+        width: 3,
+      },
+      emphasis: {
+        focus: 'series',
+        itemStyle: {
+          borderWidth: 2,
+          shadowBlur: 10,
+          shadowOffsetX: 0,
+          shadowOffsetY: 0,
+          shadowColor: 'rgba(0, 0, 0, 0.2)',
+        },
+      },
+      areaStyle:
+        props.type === 'line'
+          ? {
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                {
+                  offset: 0,
+                  color: `${props.colors[props.data.series.indexOf(series)]}60`,
+                },
+                {
+                  offset: 1,
+                  color: `${props.colors[props.data.series.indexOf(series)]}10`,
+                },
+              ]),
+            }
+          : undefined,
+    })),
+  }
+
+  const mergedOptions = {
+    ...defaultOptions,
+    ...props.options,
+  }
+
+  chartInstance.value.setOption(mergedOptions)
+}
+
+const resizeChart = () => {
+  chartInstance.value?.resize()
 }
 
 watch(() => props.data, initChart, { deep: true })
 watch(() => props.type, initChart)
-onMounted(initChart)
-onBeforeUnmount(() => chartInstance.value?.destroy())
+
+onMounted(() => {
+  initChart()
+  window.addEventListener('resize', resizeChart)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', resizeChart)
+  chartInstance.value?.dispose()
+})
 </script>
 
 <style scoped lang="scss">
@@ -122,7 +244,7 @@ onBeforeUnmount(() => chartInstance.value?.destroy())
     transition: all 0.2s ease;
 
     .tab-icon {
-      font-size: 1.25rem; // Увеличенная иконка
+      font-size: 1.25rem;
     }
 
     &.active {
@@ -160,16 +282,15 @@ onBeforeUnmount(() => chartInstance.value?.destroy())
   }
 
   .chart-container {
-    position: relative;
     width: 100%;
-    height: 320px;
+    height: 400px;
 
     @media (max-width: 768px) {
-      height: 240px;
+      height: 300px;
     }
 
     @media (max-width: 480px) {
-      height: 200px;
+      height: 250px;
     }
   }
 }

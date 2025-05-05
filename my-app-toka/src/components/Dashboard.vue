@@ -63,16 +63,23 @@
           title="Динамика выполнения"
           type="line"
           :data="completionTrendData"
-          :options="completionChartOptions"
           :time-range="completionChartType"
+          :time-range-options="[
+            { value: 'week', label: 'Неделя' },
+            { value: 'month', label: 'Месяц' },
+            { value: 'year', label: 'Год' },
+          ]"
           @time-range-change="completionChartType = $event"
         />
 
         <ChartWidget
           title="Распределение задач"
-          type="doughnut"
+          type="pie"
           :data="distributionChartData"
-          :options="distributionChartOptions"
+          :tabs="[
+            { value: 'priority', label: 'По приоритету' },
+            { value: 'status', label: 'По статусу' },
+          ]"
           :active-tab="activeDistributionTab"
           @tab-change="activeDistributionTab = $event"
         />
@@ -87,10 +94,14 @@
           @refresh="analyzeProductivity"
         />
 
-        <TimeMetricsWidget
-          :metrics="timeMetrics"
-          :chart-data="productivityByHourData"
-          :chart-options="productivityByHourOptions"
+        <ChartWidget
+          title="Продуктивность по часам"
+          type="bar"
+          :data="productivityByHourData"
+          :options="{
+            grid: { bottom: '20%' },
+            xAxis: { axisLabel: { interval: 3 } },
+          }"
         />
       </div>
     </div>
@@ -105,7 +116,6 @@ import ProductivityWidget from '@/components/widgets/ProductivityWidget.vue'
 import StatsCard from '@/components/ui/StatsCard.vue'
 import ChartWidget from '@/components/widgets/ChartWidget.vue'
 import AnalyticsWidget from '@/components/widgets/AnalyticsWidget.vue'
-import TimeMetricsWidget from '@/components/widgets/TimeMetricsWidget.vue'
 
 const taskStore = useTaskStore()
 const { formatDate } = useDate()
@@ -161,41 +171,6 @@ const highPriorityTasksCount = computed(() => {
 const todayTasksCount = computed(() => {
   return taskStore.getTasksForDate(new Date()).length
 })
-
-// Временные метрики
-const avgCompletionTime = computed(() => {
-  const completedTasks = taskStore.tasks.filter(
-    (task) => task.completed && task.timeSpent
-  )
-  if (completedTasks.length === 0) return 0
-  const totalMinutes = completedTasks.reduce(
-    (sum, task) => sum + (task.timeSpent || 0),
-    0
-  )
-  return Math.round(totalMinutes / completedTasks.length)
-})
-
-const fastestCompletionTime = computed(() => {
-  const completedTasks = taskStore.tasks.filter(
-    (task) => task.completed && task.timeSpent
-  )
-  return completedTasks.length === 0
-    ? 0
-    : Math.min(...completedTasks.map((task) => task.timeSpent))
-})
-
-const timeMetrics = computed(() => [
-  {
-    icon: 'timer',
-    value: `${avgCompletionTime.value} мин`,
-    label: 'Среднее время выполнения',
-  },
-  {
-    icon: 'speed',
-    value: `${fastestCompletionTime.value} мин`,
-    label: 'Самая быстрая задача',
-  },
-])
 
 // Данные для графиков
 const completionTrendData = computed(() => {
@@ -292,28 +267,16 @@ const completionTrendData = computed(() => {
 
   return {
     labels,
-    datasets: [
+    series: [
       {
-        label: 'Выполнено',
+        name: 'Выполнено',
+        type: 'line',
         data: completedData,
-        borderColor: 'var(--success)',
-        backgroundColor: 'rgba(var(--success-rgb), 0.1)',
-        tension: 0.4,
-        borderWidth: 2,
-        pointBackgroundColor: 'var(--success)',
-        pointRadius: 4,
-        pointHoverRadius: 6,
       },
       {
-        label: 'Создано',
+        name: 'Создано',
+        type: 'line',
         data: createdData,
-        borderColor: 'var(--info)',
-        backgroundColor: 'rgba(var(--info-rgb), 0.1)',
-        tension: 0.4,
-        borderWidth: 2,
-        pointBackgroundColor: 'var(--info)',
-        pointRadius: 4,
-        pointHoverRadius: 6,
       },
     ],
   }
@@ -322,14 +285,10 @@ const completionTrendData = computed(() => {
 const distributionChartData = computed(() => {
   if (activeDistributionTab.value === 'priority') {
     const priorities = {
-      high: { label: 'Высокий', count: 0, color: 'var(--error)' },
-      medium: { label: 'Средний', count: 0, color: 'var(--warning)' },
-      low: { label: 'Низкий', count: 0, color: 'var(--warning-light)' },
-      none: {
-        label: 'Без приоритета',
-        count: 0,
-        color: 'var(--text-tertiary)',
-      },
+      high: { label: 'Высокий', count: 0 },
+      medium: { label: 'Средний', count: 0 },
+      low: { label: 'Низкий', count: 0 },
+      none: { label: 'Без приоритета', count: 0 },
     }
 
     taskStore.tasks.forEach((task) => {
@@ -338,28 +297,37 @@ const distributionChartData = computed(() => {
 
     return {
       labels: Object.values(priorities).map((p) => p.label),
-      datasets: [
+      series: [
         {
-          data: Object.values(priorities).map((p) => p.count),
-          backgroundColor: Object.values(priorities).map((p) => p.color),
-          borderColor: 'var(--bg-primary)',
-          borderWidth: 1,
+          name: 'Задачи по приоритету',
+          type: 'pie',
+          data: Object.values(priorities).map((p) => ({
+            value: p.count,
+            name: p.label,
+          })),
         },
       ],
     }
   } else {
     return {
       labels: ['Выполнено', 'В процессе', 'Не начато'],
-      datasets: [
+      series: [
         {
+          name: 'Статус задач',
+          type: 'pie',
           data: [
-            taskStore.completedTasks,
-            taskStore.tasks.filter((t) => !t.completed && t.startedAt).length,
-            taskStore.tasks.filter((t) => !t.completed && !t.startedAt).length,
+            { value: taskStore.completedTasks, name: 'Выполнено' },
+            {
+              value: taskStore.tasks.filter((t) => !t.completed && t.startedAt)
+                .length,
+              name: 'В процессе',
+            },
+            {
+              value: taskStore.tasks.filter((t) => !t.completed && !t.startedAt)
+                .length,
+              name: 'Не начато',
+            },
           ],
-          backgroundColor: ['var(--success)', 'var(--warning)', 'var(--error)'],
-          borderColor: 'var(--bg-primary)',
-          borderWidth: 1,
         },
       ],
     }
@@ -378,142 +346,15 @@ const productivityByHourData = computed(() => {
 
   return {
     labels: hours.map((h) => `${h}:00`),
-    datasets: [
+    series: [
       {
-        label: 'Выполнено задач',
+        name: 'Выполнено задач',
+        type: 'bar',
         data: productivityData,
-        backgroundColor: 'rgba(var(--success-rgb), 0.7)',
-        borderRadius: 4,
-        borderWidth: 0,
       },
     ],
   }
 })
-
-// Настройки графиков (остаются без изменений)
-const chartCommonOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      labels: {
-        color: 'var(--text-primary)',
-        font: {
-          family: "'Roboto', sans-serif",
-        },
-        padding: 20,
-        usePointStyle: true,
-      },
-    },
-    tooltip: {
-      backgroundColor: 'var(--bg-secondary)',
-      titleColor: 'var(--text-primary)',
-      bodyColor: 'var(--text-primary)',
-      borderColor: 'var(--border)',
-      borderWidth: 1,
-      padding: 12,
-      cornerRadius: 'var(--radius-sm)',
-      displayColors: true,
-    },
-  },
-}
-
-const completionChartOptions = {
-  ...chartCommonOptions,
-  plugins: {
-    ...chartCommonOptions.plugins,
-    legend: {
-      ...chartCommonOptions.plugins.legend,
-      position: 'top',
-    },
-  },
-  scales: {
-    x: {
-      grid: {
-        color: 'var(--border)',
-        drawBorder: false,
-      },
-      ticks: {
-        color: 'var(--text-secondary)',
-        font: {
-          family: "'Roboto', sans-serif",
-        },
-      },
-    },
-    y: {
-      beginAtZero: true,
-      grid: {
-        color: 'var(--border)',
-        drawBorder: false,
-      },
-      ticks: {
-        color: 'var(--text-secondary)',
-        font: {
-          family: "'Roboto', sans-serif",
-        },
-        precision: 0,
-      },
-    },
-  },
-  elements: {
-    line: {
-      fill: 'start',
-    },
-  },
-}
-
-const distributionChartOptions = {
-  ...chartCommonOptions,
-  plugins: {
-    ...chartCommonOptions.plugins,
-    legend: {
-      ...chartCommonOptions.plugins.legend,
-      position: 'right',
-    },
-  },
-  cutout: '70%',
-  radius: '90%',
-}
-
-const productivityByHourOptions = {
-  ...chartCommonOptions,
-  plugins: {
-    ...chartCommonOptions.plugins,
-    legend: {
-      display: false,
-    },
-  },
-  scales: {
-    x: {
-      grid: {
-        display: false,
-        drawBorder: false,
-      },
-      ticks: {
-        color: 'var(--text-secondary)',
-        font: {
-          family: "'Roboto', sans-serif",
-        },
-        maxRotation: 45,
-        minRotation: 45,
-      },
-    },
-    y: {
-      beginAtZero: true,
-      grid: {
-        color: 'var(--border)',
-        drawBorder: false,
-      },
-      ticks: {
-        color: 'var(--text-secondary)',
-        font: {
-          family: "'Roboto', sans-serif",
-        },
-        precision: 0,
-      },
-    },
-  },
-}
 
 // Анализ продуктивности
 const analyzeProductivity = async () => {
