@@ -104,20 +104,18 @@ export const useTaskStore = defineStore('tasks', () => {
     () => tasks.value.filter((t) => isTaskOverdue(t)).length
   )
 
-  // Среднее время на выполнение задачи (в минутах)
+  // Среднее время выполнения задачи (в минутах)
   const avgTimeToComplete = computed(() => {
     const completedTasksList = tasks.value.filter(
       (task) => task.completed && task.dueDate && task.completedDate
     )
     if (completedTasksList.length === 0) return 0
     const totalTime = completedTasksList.reduce((acc, task) => {
-      const dueDate = task.dueDate ? new Date(task.dueDate) : new Date()
-      const completedDate = task.completedDate
-        ? new Date(task.completedDate)
-        : new Date()
+      const dueDate = new Date(task.dueDate!)
+      const completedDate = new Date(task.completedDate!)
       return acc + (completedDate.getTime() - dueDate.getTime())
     }, 0)
-    return totalTime / completedTasksList.length / (1000 * 60) // Среднее время в минутах
+    return totalTime / completedTasksList.length / (1000 * 60) // в минутах
   })
 
   // Максимальное время выполнения задачи (в минутах)
@@ -127,24 +125,26 @@ export const useTaskStore = defineStore('tasks', () => {
     )
     if (completedTasksList.length === 0) return 0
     const times = completedTasksList.map((task) => {
-      const dueDate = task.dueDate ? new Date(task.dueDate) : new Date()
-      const completedDate = task.completedDate
-        ? new Date(task.completedDate)
-        : new Date()
-      return (completedDate.getTime() - dueDate.getTime()) / (1000 * 60) // В минутах
+      const dueDate = new Date(task.dueDate!)
+      const completedDate = new Date(task.completedDate!)
+      return (completedDate.getTime() - dueDate.getTime()) / (1000 * 60)
     })
     return Math.max(...times)
   })
 
   // Категории задач
   const taskCategories = computed(() => {
-    const categories = new Set(tasks.value.map((task) => task.category))
+    const categories = new Set(
+      tasks.value.map((task) => task.category).filter(Boolean)
+    )
     return Array.from(categories)
   })
 
   // Приоритеты задач
   const taskPriorities = computed(() => {
-    const priorities = new Set(tasks.value.map((task) => task.priority))
+    const priorities = new Set(
+      tasks.value.map((task) => task.priority).filter(Boolean)
+    )
     return Array.from(priorities)
   })
 

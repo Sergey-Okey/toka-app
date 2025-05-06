@@ -71,29 +71,19 @@ $colors: (
 }
 
 body {
-  width: 100%;
-  min-height: 100vh;
-  margin: 0;
-  color: map-get($colors, text);
-  line-height: 1.6;
-  background: none;
-  position: relative;
-  overflow-x: hidden;
-}
-
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--bg-vector);
-  background-size: cover;
-  background-position: center 45%;
+  background-color: map-get($colors, background);
+  background-image:
+    radial-gradient(
+      circle at top right,
+      rgba(44, 46, 45, 0.615) 0%,
+      rgba(62, 66, 64, 0.2) 30%,
+      rgba(77, 83, 80, 0.4) 60%
+    ),
+    url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22%3E%3Ccircle cx=%22100%22 cy=%22100%22 r=%22200%22 fill=%22none%22 stroke=%22%2331a974%22 stroke-width=%224%22/%3E%3C/svg%3E');
+  background-position: center;
+  background-size: 200% 200%;
   background-repeat: no-repeat;
-  z-index: -1;
-  will-change: transform;
+  height: 100%;
 }
 
 .container {
