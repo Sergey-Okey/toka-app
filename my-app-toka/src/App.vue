@@ -71,72 +71,16 @@ $colors: (
 }
 
 body {
-  animation: theme 21s linear infinite;
-
-  &:after,
-  &:before {
-    content: '';
-    display: block;
-    position: fixed;
-    z-index: -1;
-    top: 0;
-    width: 100vw; // IE/Edge
-    height: 100vh; // fallback
-    width: 100vmax;
-    height: 100vmax;
-    background: rgba(0, 0, 0, 0.05);
-    animation: background 90s linear infinite;
-  }
-
-  &:after {
-    left: 15vw;
-  }
-
-  &:before {
-    right: 15vw;
-    animation-delay: -30s;
-    animation-direction: reverse;
-  }
-}
-
-@keyframes theme {
-  0% {
-    background: #6f706f;
-  }
-
-  16% {
-    background: #1e1f1f;
-  }
-
-  33% {
-    background: #292a2a;
-  }
-
-  50% {
-    background: #3e3f40;
-  }
-
-  66% {
-    background: #242323;
-  }
-
-  83% {
-    background: #201f1f;
-  }
-
-  100% {
-    background: #5b5c5b;
-  }
-}
-
-@keyframes background {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  color: map-get($colors, text);
+  line-height: 1.6;
+  background: var(--bg-tertiary);
+  position: relative;
+  overflow-x: hidden;
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 .container {
