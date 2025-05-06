@@ -450,6 +450,7 @@ onMounted(() => {
     font-weight: 600;
     margin: 0;
     line-height: 1.2;
+    color: var(--text-primary);
   }
 
   .dashboard-actions {

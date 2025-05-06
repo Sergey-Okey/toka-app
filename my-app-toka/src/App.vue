@@ -71,19 +71,72 @@ $colors: (
 }
 
 body {
-  background-color: map-get($colors, background);
-  background-image:
-    radial-gradient(
-      circle at top right,
-      rgba(44, 46, 45, 0.615) 0%,
-      rgba(62, 66, 64, 0.2) 30%,
-      rgba(77, 83, 80, 0.4) 60%
-    ),
-    url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22%3E%3Ccircle cx=%22100%22 cy=%22100%22 r=%22200%22 fill=%22none%22 stroke=%22%2331a974%22 stroke-width=%224%22/%3E%3C/svg%3E');
-  background-position: center;
-  background-size: 200% 200%;
-  background-repeat: no-repeat;
-  height: 100%;
+  animation: theme 21s linear infinite;
+
+  &:after,
+  &:before {
+    content: '';
+    display: block;
+    position: fixed;
+    z-index: -1;
+    top: 0;
+    width: 100vw; // IE/Edge
+    height: 100vh; // fallback
+    width: 100vmax;
+    height: 100vmax;
+    background: rgba(0, 0, 0, 0.05);
+    animation: background 90s linear infinite;
+  }
+
+  &:after {
+    left: 15vw;
+  }
+
+  &:before {
+    right: 15vw;
+    animation-delay: -30s;
+    animation-direction: reverse;
+  }
+}
+
+@keyframes theme {
+  0% {
+    background: #6f706f;
+  }
+
+  16% {
+    background: #1e1f1f;
+  }
+
+  33% {
+    background: #292a2a;
+  }
+
+  50% {
+    background: #3e3f40;
+  }
+
+  66% {
+    background: #242323;
+  }
+
+  83% {
+    background: #201f1f;
+  }
+
+  100% {
+    background: #5b5c5b;
+  }
+}
+
+@keyframes background {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .container {
