@@ -82,7 +82,6 @@ body {
   background-size: cover;
   background-repeat: no-repeat;
 }
-
 .container {
   width: 100%;
   max-width: 1600px;
