@@ -2,7 +2,6 @@
   <div id="app">
     <div class="container">
       <AppHeader />
-      <Analytics />
       <main class="main-content">
         <router-view v-slot="{ Component }">
           <transition name="fade" mode="out-in">
@@ -18,7 +17,6 @@
 import '@/assets/styles/variables.scss'
 import { onMounted } from 'vue'
 import AppHeader from '@/components/AppHeader.vue'
-import { Analytics } from '@vercel/analytics/react'
 
 // Проверка prefers-reduced-motion
 const reduceMotion = window.matchMedia(

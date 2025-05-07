@@ -3,6 +3,8 @@ import HomeView from '@/views/HomeView.vue'
 import DashboardView from '@/views/DashboardView.vue'
 import TasksView from '@/views/TasksView.vue'
 import CalendarView from '@/views/CalendarView.vue'
+import Login from '@/views/Login.vue'
+import Register from '@/views/Register.vue'
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
@@ -28,6 +30,16 @@ const routes: Array<RouteRecordRaw> = [
     path: '/calendar',
     name: 'calendar',
     component: CalendarView,
+  },
+  {
+    path: '/login',
+    name: 'login',
+    component: Login,
+  },
+  {
+    path: '/register',
+    name: 'register',
+    component: Register,
   },
 ]
 
