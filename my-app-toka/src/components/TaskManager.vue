@@ -1618,7 +1618,7 @@ label {
   }
 
   .main-interface {
-    padding: 20px;
+    padding: 0;
     border-radius: var(--radius-lg);
   }
 
