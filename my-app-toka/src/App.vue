@@ -2,6 +2,7 @@
   <div id="app">
     <div class="container">
       <AppHeader />
+      <Analytics />
       <main class="main-content">
         <router-view v-slot="{ Component }">
           <transition name="fade" mode="out-in">
