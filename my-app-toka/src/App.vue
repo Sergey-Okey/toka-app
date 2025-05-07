@@ -18,6 +18,7 @@
 import '@/assets/styles/variables.scss'
 import { onMounted } from 'vue'
 import AppHeader from '@/components/AppHeader.vue'
+import { Analytics } from '@vercel/analytics/react'
 
 // Проверка prefers-reduced-motion
 const reduceMotion = window.matchMedia(
