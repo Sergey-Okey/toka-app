@@ -30,7 +30,7 @@ export const useTaskStore = defineStore('tasks', () => {
   })
 
   // Сохранение задач в localStorage
-  const saveTasks = (): void => {
+  const addTasks = (): void => {
     localStorage.setItem('tasks', JSON.stringify(tasks.value))
   }
 
@@ -41,12 +41,12 @@ export const useTaskStore = defineStore('tasks', () => {
     } else {
       tasks.value.unshift(task)
     }
-    saveTasks()
+    addTasks()
   }
 
   const deleteTask = (taskId: string): void => {
     tasks.value = tasks.value.filter((task) => task.id !== taskId)
-    saveTasks()
+    addTasks()
   }
 
   const toggleTaskCompletion = (taskId: string): void => {
@@ -54,7 +54,7 @@ export const useTaskStore = defineStore('tasks', () => {
     if (task) {
       task.completed = !task.completed
       task.completedDate = task.completed ? new Date().toISOString() : undefined
-      saveTasks()
+      addTasks()
     }
   }
 
