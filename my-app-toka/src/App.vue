@@ -43,13 +43,13 @@ $colors: (
   text: #ffffff,
 );
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 // Базовые стили
 #app {
-  font-family:
-    'Jost',
-    -apple-system,
-    BlinkMacSystemFont,
-    sans-serif;
+  font-family: 'Jost', -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
@@ -63,6 +63,8 @@ $colors: (
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
 
   &::before,
   &::after {
