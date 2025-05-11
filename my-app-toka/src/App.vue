@@ -1,7 +1,6 @@
 <template>
   <div id="app">
     <div class="container">
-      <AppHeader />
       <main class="main-content">
         <router-view v-slot="{ Component }">
           <transition name="fade" mode="out-in">
@@ -16,7 +15,6 @@
 <script setup>
 import '@/assets/styles/variables.scss'
 import { onMounted } from 'vue'
-import AppHeader from '@/components/AppHeader.vue'
 
 // Проверка prefers-reduced-motion
 const reduceMotion = window.matchMedia(
