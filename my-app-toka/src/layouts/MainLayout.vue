@@ -1,14 +1,30 @@
 <template>
   <div class="layout">
-    <main class="main">
-      <router-view />
-    </main>
-    <BottomNav />
+    <AppHeader v-if="!isMobile" />
+    <router-view />
+    <BottomNav v-if="isMobile" />
   </div>
 </template>
 
 <script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
 import BottomNav from '@/components/BottomNav.vue'
+import AppHeader from '@/components/AppHeader.vue'
+
+const isMobile = ref(window.innerWidth <= 400)
+
+const checkMobileScreen = () => {
+  isMobile.value = window.innerWidth <= 400
+}
+
+onMounted(() => {
+  checkMobileScreen()
+  window.addEventListener('resize', checkMobileScreen)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', checkMobileScreen)
+})
 </script>
 
 <style scoped lang="scss">
@@ -17,24 +33,5 @@ import BottomNav from '@/components/BottomNav.vue'
   flex-direction: column;
   min-height: 100vh;
   background: var(--bg-primary);
-}
-
-.header {
-  padding: var(--space-md);
-  background-color: var(--bg-secondary);
-  border-bottom: 1px solid var(--border);
-  text-align: center;
-}
-
-.title {
-  margin: 0;
-  font-size: var(--text-lg);
-  color: var(--text-primary);
-}
-
-.main {
-  flex: 1;
-  padding: var(--space-sm);
-  padding-bottom: var(--bottom-nav-height);
 }
 </style>

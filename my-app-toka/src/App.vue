@@ -92,11 +92,6 @@ body {
   flex-direction: column;
 }
 
-.main-content {
-  flex: 1;
-  padding: 2rem 0;
-}
-
 .title {
   font-size: clamp(1.8rem, 5vw, 3rem);
   font-weight: 600;
