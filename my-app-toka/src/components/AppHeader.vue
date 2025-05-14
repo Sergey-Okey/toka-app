@@ -2,6 +2,7 @@
   <header class="header">
     <div class="header-container">
       <div class="logo">
+        <img src="../assets/images/logo-toka" alt="logo" />
         <router-link class="logo-text" to="/">Toka</router-link>
       </div>
 
@@ -212,8 +213,7 @@ function debounce(fn: Function, delay: number) {
       height: 0.1875rem;
       background: var(--primary);
       border-radius: 0.625rem;
-      transition:
-        transform var(--transition-normal) var(--ease-out),
+      transition: transform var(--transition-normal) var(--ease-out),
         opacity var(--transition-normal) var(--ease-out);
       left: 0;
 
@@ -253,8 +253,7 @@ function debounce(fn: Function, delay: number) {
     display: flex;
     gap: var(--space-md);
     align-items: center;
-    transition:
-      max-height var(--transition-slow) var(--ease-out),
+    transition: max-height var(--transition-slow) var(--ease-out),
       padding var(--transition-slow) var(--ease-out);
     backdrop-filter: blur(3.125rem);
 
@@ -264,8 +263,7 @@ function debounce(fn: Function, delay: number) {
       padding: var(--space-xs) var(--space-sm);
       border-radius: var(--radius-sm);
       position: relative;
-      transition:
-        color var(--transition-normal) var(--ease-out),
+      transition: color var(--transition-normal) var(--ease-out),
         width var(--transition-normal) var(--ease-out);
 
       &::after {
