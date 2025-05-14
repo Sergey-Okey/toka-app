@@ -1,6 +1,6 @@
 <template>
   <div class="layout">
-    <AppHeader v-if="!isMobile" />
+    <AppHeader />
     <router-view />
     <BottomNav v-if="isMobile" />
   </div>

@@ -76,7 +76,7 @@ body {
   margin: 0;
   color: map-get($colors, text);
   line-height: 1.6;
-  background: var(--bg-tertiary);
+  background: var(--bg-primary);
   position: relative;
   overflow-x: hidden;
   background-size: cover;
@@ -84,7 +84,6 @@ body {
 }
 .container {
   width: 100%;
-  max-width: 1600px;
   padding: 0 100px;
   margin: 0 auto;
   flex: 1;
@@ -145,6 +144,7 @@ body {
 
   .main-content {
     padding: 1.5rem 0;
+    margin-bottom: 4rem;
   }
 
   .title {

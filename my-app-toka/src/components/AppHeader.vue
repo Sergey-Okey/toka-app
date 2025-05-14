@@ -197,11 +197,11 @@ function debounce(fn: Function, delay: number) {
     font-weight: 700;
     font-size: var(--text-xl);
     text-decoration: none;
-    color: var(--text-primary);
+    color: var(--primary);
     transition: color var(--transition-normal) var(--ease-out);
 
     &:hover {
-      color: var(--primary);
+      color: var(--text-primary);
     }
   }
 
@@ -356,9 +356,13 @@ function debounce(fn: Function, delay: number) {
   }
 
   @media (max-width: 48rem) {
-    top: 0.3125rem;
+    top: 0;
     padding: 0.625rem 0.9375rem;
-
+    border-radius: 0;
+    border-bottom: solid 1px var(--border);
+    outline: 0;
+    margin: 0;
+    margin-bottom: 20px;
     .burger {
       display: flex;
     }
@@ -381,6 +385,11 @@ function debounce(fn: Function, delay: number) {
       i {
         font-size: 1.2rem;
       }
+    }
+  }
+  @media (max-width: 480px) {
+    .burger {
+      display: none;
     }
   }
 }
