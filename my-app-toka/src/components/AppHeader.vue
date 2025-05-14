@@ -2,7 +2,7 @@
   <header class="header">
     <div class="header-container">
       <div class="logo">
-        <img src="../assets/images/logo-toka" alt="logo" />
+        <img src="../assets/images/logo-toka.png" alt="logo" />
         <router-link class="logo-text" to="/">Toka</router-link>
       </div>
 
@@ -175,6 +175,16 @@ function debounce(fn: Function, delay: number) {
     display: flex;
     justify-content: space-between;
     align-items: center;
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      img {
+        max-width: 1.5rem;
+        cursor: pointer;
+      }
+    }
   }
 
   &-right {
