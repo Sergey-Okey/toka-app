@@ -11,10 +11,10 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import BottomNav from '@/components/BottomNav.vue'
 import AppHeader from '@/components/AppHeader.vue'
 
-const isMobile = ref(window.innerWidth <= 400)
+const isMobile = ref(window.innerWidth <= 480)
 
 const checkMobileScreen = () => {
-  isMobile.value = window.innerWidth <= 400
+  isMobile.value = window.innerWidth <= 480
 }
 
 onMounted(() => {
