@@ -2,7 +2,7 @@
   <header class="header">
     <div class="header-container">
       <div class="logo">
-        <img src="../assets/images/logo-toka.png" alt="logo" />
+        <img src="../assets/images/logo.svg" alt="logo" />
         <router-link class="logo-text" to="/">Toka</router-link>
       </div>
 
