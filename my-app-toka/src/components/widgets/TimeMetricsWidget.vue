@@ -5,9 +5,11 @@
       <button
         class="refresh-btn"
         @click="refreshData"
+        :disabled="isLoading"
         aria-label="Обновить данные"
       >
-        <i class="material-icons-outlined">refresh</i>
+        <i class="material-icons-outlined" v-if="!isLoading"> refresh </i>
+        <span v-else class="spinner"></span>
       </button>
     </div>
 
@@ -50,14 +52,20 @@ let chartInstance = null
 const avgTime = computed(() => taskStore.avgTimeToComplete.toFixed(1))
 const maxTime = computed(() => taskStore.maxTimeToComplete.toFixed(1))
 
+const updateChart = () => {
+  if (chartInstance) {
+    chartInstance.setOption(getChartOptions())
+  }
+}
+
 const refreshData = async () => {
+  if (isLoading.value) return
   try {
     isLoading.value = true
     await taskStore.fetchTasks()
-    if (chartInstance) {
-      chartInstance.setOption(getChartOptions())
-    }
+    updateChart()
   } catch (error) {
+    // Здесь можно подключить систему уведомлений для пользователя
     console.error('Ошибка при обновлении данных:', error)
   } finally {
     isLoading.value = false
@@ -136,13 +144,13 @@ function getCompletionTimes() {
 const initChart = () => {
   if (chartRef.value) {
     chartInstance = echarts.init(chartRef.value)
-    chartInstance.setOption(getChartOptions())
+    updateChart()
   }
 }
 
 const handleResize = () => {
   if (chartInstance) {
-    chartInstance.setOption(getChartOptions())
+    updateChart()
     chartInstance.resize()
   }
 }
@@ -155,9 +163,7 @@ onMounted(() => {
 watch(
   () => taskStore.tasks,
   () => {
-    if (chartInstance) {
-      chartInstance.setOption(getChartOptions())
-    }
+    updateChart()
   },
   { deep: true }
 )
@@ -197,18 +203,40 @@ watch(
     width: 36px;
     height: 36px;
 
-    &:hover {
+    &:hover:not(:disabled) {
       color: var(--primary);
       background-color: var(--bg-primary);
       transform: rotate(180deg);
     }
 
-    &:active {
+    &:active:not(:disabled) {
       transform: rotate(360deg);
+    }
+
+    &:disabled {
+      cursor: default;
+      opacity: 0.5;
+      transform: none;
     }
 
     i {
       font-size: 1.25rem;
+    }
+  }
+
+  /* Спиннер для загрузки */
+  .spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--text-secondary);
+    border-top: 2px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
     }
   }
 

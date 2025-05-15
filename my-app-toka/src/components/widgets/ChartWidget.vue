@@ -17,10 +17,7 @@
       </div>
 
       <div v-if="timeRangeOptions" class="time-range-selector">
-        <select
-          v-model="selectedRange"
-          @change="$emit('time-range-change', $event.target.value)"
-        >
+        <select v-model="selectedRange" @change="onTimeRangeChange">
           <option
             v-for="option in timeRangeOptions"
             :key="option.value"
@@ -32,19 +29,26 @@
       </div>
     </div>
 
-    <div class="chart-container" ref="chartContainer"></div>
+    <apexchart
+      v-if="chartSeries.length"
+      type="line"
+      height="400"
+      :options="chartOptions"
+      :series="chartSeries"
+      ref="apexChart"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
-import * as echarts from 'echarts'
+import { ref, watch, computed, onMounted } from 'vue'
+import ApexCharts from 'apexcharts'
+import VueApexCharts from 'vue3-apexcharts'
 
 const props = defineProps({
   title: String,
   type: { type: String, default: 'line' },
   data: Object,
-  options: { type: Object, default: () => ({}) },
   tabs: Array,
   activeTab: String,
   timeRangeOptions: Array,
@@ -66,139 +70,96 @@ const props = defineProps({
 
 const emit = defineEmits(['tab-change', 'time-range-change'])
 
-const chartContainer = ref(null)
-const chartInstance = ref(null)
 const selectedRange = ref(props.timeRange)
 
-const initChart = () => {
-  if (chartInstance.value) {
-    chartInstance.value.dispose()
-  }
-
-  if (!chartContainer.value || !props.data) return
-
-  chartInstance.value = echarts.init(chartContainer.value)
-
-  const defaultOptions = {
-    color: props.colors,
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: {
-        type: 'shadow',
-      },
-      formatter: function (params) {
-        let result = params[0].axisValue + '<br/>'
-        params.forEach((item) => {
-          result += `
-            <span style="display:inline-block;margin-right:5px;border-radius:10px;
-              width:9px;height:9px;background-color:${item.color}"></span>
-            ${item.seriesName}: <strong>${item.value}</strong><br/>
-          `
-        })
-        return result
-      },
-    },
-    legend: {
-      data: props.data.series?.map((item) => item.name) || [],
-      bottom: 0,
-    },
-    grid: {
-      left: '3%',
-      right: '4%',
-      bottom: '15%',
-      top: '15%',
-      containLabel: true,
-    },
-    xAxis: {
-      type: 'category',
-      data: props.data.labels || [],
-      axisLine: {
-        lineStyle: {
-          color: '#D9D9D9',
-        },
-      },
-      axisLabel: {
-        color: '#666',
-      },
-    },
-    yAxis: {
-      type: 'value',
-      axisLine: {
-        lineStyle: {
-          color: '#D9D9D9',
-        },
-      },
-      axisLabel: {
-        color: '#666',
-      },
-      splitLine: {
-        lineStyle: {
-          color: '#F0F0F0',
-          type: 'dashed',
-        },
-      },
-    },
-    series: (props.data.series || []).map((series) => ({
-      ...series,
-      type: props.type,
-      smooth: true,
-      symbol: 'circle',
-      symbolSize: 6,
-      lineStyle: {
-        width: 3,
-      },
-      emphasis: {
-        focus: 'series',
-        itemStyle: {
-          borderWidth: 2,
-          shadowBlur: 10,
-          shadowOffsetX: 0,
-          shadowOffsetY: 0,
-          shadowColor: 'rgba(0, 0, 0, 0.2)',
-        },
-      },
-      areaStyle:
-        props.type === 'line'
-          ? {
-              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                {
-                  offset: 0,
-                  color: `${props.colors[props.data.series.indexOf(series)]}60`,
-                },
-                {
-                  offset: 1,
-                  color: `${props.colors[props.data.series.indexOf(series)]}10`,
-                },
-              ]),
-            }
-          : undefined,
-    })),
-  }
-
-  const mergedOptions = {
-    ...defaultOptions,
-    ...props.options,
-  }
-
-  chartInstance.value.setOption(mergedOptions)
-}
-
-const resizeChart = () => {
-  chartInstance.value?.resize()
-}
-
-watch(() => props.data, initChart, { deep: true })
-watch(() => props.type, initChart)
-
-onMounted(() => {
-  initChart()
-  window.addEventListener('resize', resizeChart)
+// Преобразование данных из props.data в формат apexcharts series
+const chartSeries = computed(() => {
+  if (!props.data || !props.data.series) return []
+  return props.data.series.map((serie, index) => ({
+    name: serie.name,
+    data: serie.data || [],
+    color: props.colors[index] || undefined,
+  }))
 })
 
-onBeforeUnmount(() => {
-  window.removeEventListener('resize', resizeChart)
-  chartInstance.value?.dispose()
-})
+// Опции графика apexcharts
+const chartOptions = computed(() => ({
+  chart: {
+    type: props.type,
+    toolbar: { show: false },
+    zoom: { enabled: false },
+  },
+  colors: props.colors,
+  stroke: {
+    curve: 'smooth',
+    width: 3,
+  },
+  markers: {
+    size: 6,
+    hover: { size: 8 },
+  },
+  xaxis: {
+    categories: props.data?.labels || [],
+    labels: {
+      style: {
+        colors: '#666',
+      },
+    },
+    axisBorder: {
+      show: true,
+      color: '#D9D9D9',
+    },
+  },
+  yaxis: {
+    labels: {
+      style: {
+        colors: '#666',
+      },
+    },
+    axisBorder: {
+      show: true,
+      color: '#D9D9D9',
+    },
+  },
+  grid: {
+    borderColor: '#F0F0F0',
+    strokeDashArray: 4,
+  },
+  tooltip: {
+    shared: true,
+    intersect: false,
+    y: {
+      formatter: (val) => val,
+    },
+  },
+  legend: {
+    position: 'bottom',
+    labels: {
+      colors: '#666',
+    },
+  },
+  fill:
+    props.type === 'line'
+      ? {
+          type: 'gradient',
+          gradient: {
+            shadeIntensity: 1,
+            opacityFrom: 0.4,
+            opacityTo: 0.1,
+            stops: [0, 90, 100],
+            colorStops: chartSeries.value.map((serie, i) => ({
+              offset: 0,
+              color: props.colors[i] + '99',
+              opacity: 0.4,
+            })),
+          },
+        }
+      : undefined,
+}))
+
+const onTimeRangeChange = (e) => {
+  emit('time-range-change', selectedRange.value)
+}
 </script>
 
 <style scoped lang="scss">
@@ -281,7 +242,7 @@ onBeforeUnmount(() => {
     }
   }
 
-  .chart-container {
+  apexchart {
     width: 100%;
     height: 400px;
 
