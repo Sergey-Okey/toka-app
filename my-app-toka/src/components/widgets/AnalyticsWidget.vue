@@ -53,7 +53,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import ApexCharts from 'vue3-apexcharts'
-import { useTaskStore } from '@/stores/taskStore'
+import { useTaskStore } from '@/store/tasks'
 
 const taskStore = useTaskStore()
 

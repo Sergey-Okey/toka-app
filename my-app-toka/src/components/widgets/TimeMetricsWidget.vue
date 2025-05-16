@@ -42,7 +42,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import * as echarts from 'echarts'
-import { useTaskStore } from '@/stores/taskStore'
+import { useTaskStore } from '@/store/tasks'
 
 const taskStore = useTaskStore()
 const chartRef = ref(null)

@@ -105,7 +105,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
-import { useTaskStore } from '@/stores/taskStore'
+import { useTaskStore } from '@/store/tasks'
 import { useDate } from '@/composables/useDate'
 import ProductivityWidget from '@/components/widgets/ProductivityWidget.vue'
 import StatsCard from '@/components/ui/StatsCard.vue'
@@ -370,8 +370,8 @@ const analyzeProductivity = async () => {
         overdueCount > 0
           ? `У вас ${overdueCount} просроченных задач. Попробуйте выполнить их в первую очередь.`
           : highPriorityCount > 0
-            ? `У вас ${highPriorityCount} важных задач. Продолжайте в том же духе!`
-            : 'Попробуйте взяться за более сложные задачи, чтобы развиваться.'
+          ? `У вас ${highPriorityCount} важных задач. Продолжайте в том же духе!`
+          : 'Попробуйте взяться за более сложные задачи, чтобы развиваться.'
     } else if (completionRate >= 50) {
       productivityInsight.value =
         'Хороший результат, но есть куда расти. Вы выполняете больше половины задач.'
@@ -423,9 +423,7 @@ onMounted(() => {
   width: 100%;
   margin: 0 auto;
   min-height: 100vh;
-  transition:
-    background-color 0.3s var(--ease-out),
-    color 0.3s var(--ease-out);
+  transition: background-color 0.3s var(--ease-out), color 0.3s var(--ease-out);
 }
 
 .dashboard-header {
@@ -479,10 +477,8 @@ onMounted(() => {
     cursor: pointer;
     padding: 8px;
     border-radius: 50%;
-    transition:
-      background-color 0.3s var(--ease-out),
-      color 0.3s var(--ease-out),
-      transform 0.2s var(--ease-out);
+    transition: background-color 0.3s var(--ease-out),
+      color 0.3s var(--ease-out), transform 0.2s var(--ease-out);
     display: flex;
     align-items: center;
     justify-content: center;

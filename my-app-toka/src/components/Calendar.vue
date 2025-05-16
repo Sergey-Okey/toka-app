@@ -100,7 +100,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { useTaskStore } from '@/stores/taskStore'
+import { useTaskStore } from '@/store/tasks'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
