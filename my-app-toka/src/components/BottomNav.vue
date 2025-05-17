@@ -1,15 +1,24 @@
 <template>
   <nav class="bottom-nav">
+    <div class="nav-background"></div>
     <ul class="nav-list">
       <li v-for="item in navItems" :key="item.to" class="nav-item">
-        <router-link :to="item.to" class="nav-link" v-slot="{ isExactActive }">
-          <div class="nav-content" :class="{ active: isExactActive }">
+        <router-link
+          :to="item.to"
+          class="nav-link"
+          v-slot="{ isActive, isExactActive }"
+        >
+          <div
+            class="nav-content"
+            :class="{ active: isActive, exact: isExactActive }"
+          >
             <div class="icon-wrapper">
               <span class="icon material-symbols-rounded">
                 {{ item.icon }}
               </span>
             </div>
             <span class="label">{{ item.label }}</span>
+            <div class="active-indicator"></div>
           </div>
         </router-link>
       </li>
@@ -19,48 +28,49 @@
 
 <script setup>
 const navItems = [
-  { to: '/tasks', icon: 'task_alt', label: 'Задачи' },
-  { to: '/calendar', icon: 'event', label: 'Календарь' },
-  { to: '/dashboard', icon: 'dashboard', label: 'Дашборд' },
+  { to: '/tasks', icon: 'checklist', label: 'Задачи' },
+  { to: '/calendar', icon: 'calendar_month', label: 'Календарь' },
+  { to: '/dashboard', icon: 'space_dashboard', label: 'Дашборд' },
 ]
 </script>
 
 <style scoped lang="scss">
 .bottom-nav {
-  --nav-height: 72px;
+  --nav-height: 80px;
   --icon-size: 24px;
+  --indicator-height: 3px;
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   height: var(--nav-height);
+  z-index: 100;
   display: flex;
   justify-content: center;
-  align-items: flex-end;
-  z-index: 100;
-  padding: 0 var(--space-md) var(--space-xs);
+  pointer-events: none;
+  border-top: solid 1px var(--border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(50px);
+  padding-top: 10px;
 }
 
 .nav-list {
   display: flex;
   justify-content: space-around;
   width: 100%;
-  max-width: 100%;
-  padding: 0;
-  margin: 0;
+  max-width: 500px;
+  padding: 0 var(--space-md);
+  margin: 0 auto;
   list-style: none;
-  background: var(--bg-secondary);
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  box-shadow: var(--shadow-lg);
-  border: 1px solid var(--border-dark);
-  border-bottom: none;
-  padding: var(--space-xs) var(--space-sm) 0;
+  position: relative;
+  pointer-events: auto;
 }
 
 .nav-item {
   flex: 1;
   display: flex;
   justify-content: center;
+  position: relative;
 }
 
 .nav-link {
@@ -69,7 +79,7 @@ const navItems = [
   flex-direction: column;
   align-items: center;
   width: 100%;
-  padding: var(--space-xs);
+  padding: var(--space-xs) var(--space-xxs);
   position: relative;
 }
 
@@ -78,107 +88,104 @@ const navItems = [
   flex-direction: column;
   align-items: center;
   color: var(--text-secondary);
-  transition: color var(--transition-normal) var(--ease-out);
+  transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+  position: relative;
+  width: 100%;
 
   &.active {
     color: var(--primary);
 
     .icon-wrapper {
-      transform: translateY(-50%);
-
-      &::after {
-        transform: scale(1);
-        opacity: 1;
+      .icon {
+        font-variation-settings: 'FILL' 1;
       }
     }
 
-    .icon {
-      transform: scale(1.15);
+    .label {
+      opacity: 1;
+      transform: translateY(2px);
     }
 
-    .label {
-      transform: translateY(4px);
+    .active-indicator {
       opacity: 1;
+    }
+  }
+
+  &.exact {
+    .icon-wrapper {
+      .icon {
+        font-variation-settings: 'FILL' 1, 'wght' 500;
+      }
     }
   }
 }
 
 .icon-wrapper {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
-  transition: transform var(--transition-normal) var(--ease-out);
+  transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1);
 
-  &::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--primary-bg);
-    border-radius: 50%;
-    transform: scale(0.5);
-    opacity: 0;
-    transition: all var(--transition-normal) var(--ease-out);
-    z-index: -1;
+  .icon {
+    font-size: var(--icon-size);
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    transition: font-variation-settings 0.2s ease;
   }
-}
-
-.icon {
-  font-size: var(--icon-size);
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-  transition: transform var(--transition-normal) var(--ease-out);
-  will-change: transform;
 }
 
 .label {
-  font-size: var(--text-sm);
+  font-size: 0.75rem;
   font-weight: 500;
-  margin-top: var(--space-xxs);
-  transition: all var(--transition-normal) var(--ease-out);
+  margin-top: 4px;
+  transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
   opacity: 0.8;
-  will-change: transform;
 }
 
-/* Плавное появление при первой загрузке */
+.active-indicator {
+  position: absolute;
+  bottom: -10px;
+  transform: translateX(-50%) scaleX(0.5);
+  width: 24px;
+  height: var(--indicator-height);
+  background: var(--primary);
+  border-radius: 3px;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* Анимация появления */
+.bottom-nav {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fadeInUp 0.7s cubic-bezier(0.2, 0, 0, 1) 0.1s forwards;
+}
+
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-.bottom-nav {
-  animation: fadeInUp 0.4s var(--ease-out) forwards;
-}
-
-/* Адаптивность */
+/* Адаптив для мобильных */
 @media (max-width: 480px) {
   .bottom-nav {
-    --nav-height: 68px;
+    --nav-height: 72px;
     --icon-size: 22px;
-    padding: 0 var(--space-sm) var(--space-xs);
   }
 
   .nav-list {
-    padding: var(--space-xxs) var(--space-xs) 0;
+    padding: 0 var(--space-sm);
   }
 
   .icon-wrapper {
-    width: 36px;
-    height: 36px;
+    width: 40px;
   }
 
   .label {
-    font-size: 0.65rem;
+    font-size: 0.7rem;
   }
 }
 </style>
