@@ -188,7 +188,7 @@ const navItems = ref([
   }
 
   .label {
-    font-size: var(--text-base);
+    font-size: var(--text-sm);
   }
 
   .icon-container {
