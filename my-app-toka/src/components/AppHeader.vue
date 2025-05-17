@@ -298,10 +298,9 @@ function debounce(fn: Function, delay: number) {
 
       &.router-link-exact-active {
         color: var(--text-primary);
-        background-color: rgba(0, 0, 0, 0.5);
 
         &::after {
-          width: 80%;
+          width: 50%;
         }
       }
     }
