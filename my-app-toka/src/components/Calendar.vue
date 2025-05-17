@@ -391,7 +391,7 @@ const getPriorityLabel = (priority) => {
     }
 
     &:hover {
-      background-color: var(--bg-tertiary);
+      background-color: var(--bg-secondary);
     }
 
     &.current-month {
@@ -587,7 +587,7 @@ const getPriorityLabel = (priority) => {
     }
 
     .material-icons {
-      color: #31a974;
+      color: var(--primary);
       font-size: 1.2rem;
 
       @media (max-width: 480px) {
