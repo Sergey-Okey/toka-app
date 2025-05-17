@@ -620,8 +620,7 @@ const toggleSortDirection = () => {
 
 .search-input:focus {
   border-color: var(--primary);
-  box-shadow:
-    0 0 0 3px rgba(var(--primary-rgb), 0.15),
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.15),
     inset 0 1px 2px rgba(0, 0, 0, 0.05);
   outline: none;
 }
@@ -1359,8 +1358,7 @@ label {
 
 .input-field:focus {
   border-color: var(--primary);
-  box-shadow:
-    0 0 0 3px rgba(var(--primary-rgb), 0.15),
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.15),
     inset 0 1px 2px rgba(0, 0, 0, 0.05);
   outline: none;
 }

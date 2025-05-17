@@ -25,9 +25,9 @@
 import { ref, onMounted } from 'vue'
 
 const navItems = ref([
-  { to: '/dashboard', icon: 'dashboard', label: 'Дашборд' },
   { to: '/tasks', icon: 'task_alt', label: 'Задачи' },
   { to: '/calendar', icon: 'event', label: 'Календарь' },
+  { to: '/dashboard', icon: 'dashboard', label: 'Дашборд' },
 ])
 
 const icons = ref([])

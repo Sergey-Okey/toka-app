@@ -214,8 +214,8 @@ const getPriorityLabel = (priority) => {
   border-radius: 1.2rem;
   backdrop-filter: blur(50px);
   padding: 1.5rem;
-  border: 1px solid rgba(221, 221, 221, 0.5);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadoe-lg);
   max-width: 100%;
   margin: 0 auto;
   margin-bottom: 1rem;
@@ -223,7 +223,7 @@ const getPriorityLabel = (priority) => {
   position: relative;
   overflow: hidden;
 
-  @media (max-width: 400px) {
+  @media (max-width: 480px) {
     padding: 0.8rem;
     border-radius: 1rem;
   }
@@ -235,7 +235,7 @@ const getPriorityLabel = (priority) => {
   align-items: center;
   margin-bottom: 1.5rem;
 
-  @media (max-width: 400px) {
+  @media (max-width: 480px) {
     margin-bottom: 1rem;
     flex-wrap: wrap;
     gap: 0.5rem;
@@ -245,9 +245,9 @@ const getPriorityLabel = (priority) => {
     font-size: 1.3rem;
     font-weight: 600;
     margin: 0;
-    color: #ffffff;
+    color: var(--text-primary);
 
-    @media (max-width: 400px) {
+    @media (max-width: 480px) {
       font-size: 1.1rem;
       order: -1;
       width: 100%;
@@ -259,7 +259,7 @@ const getPriorityLabel = (priority) => {
     width: 2.5rem;
     height: 2.5rem;
     border-radius: 50%;
-    background-color: rgba(49, 169, 116, 0.2);
+    background-color: var(--primary-bg);
     border: none;
     display: flex;
     align-items: center;
@@ -267,20 +267,20 @@ const getPriorityLabel = (priority) => {
     cursor: pointer;
     transition: all 0.3s ease;
 
-    @media (max-width: 400px) {
+    @media (max-width: 480px) {
       width: 2rem;
       height: 2rem;
     }
 
     &:hover {
-      background-color: rgba(49, 169, 116, 0.3);
+      background-color: var(--primary-rgb);
     }
 
     .material-icons {
       font-size: 1.3rem;
       color: #31a974;
 
-      @media (max-width: 400px) {
+      @media (max-width: 480px) {
         font-size: 1.1rem;
       }
     }
@@ -292,7 +292,7 @@ const getPriorityLabel = (priority) => {
   grid-template-columns: repeat(7, 1fr);
   margin-bottom: 1rem;
 
-  @media (max-width: 400px) {
+  @media (max-width: 480px) {
     margin-bottom: 0.8rem;
   }
 
@@ -300,10 +300,10 @@ const getPriorityLabel = (priority) => {
     text-align: center;
     font-size: 1rem;
     font-weight: 500;
-    color: #b0b0b0;
+    color: var(--text-primary);
     padding: 0.5rem;
 
-    @media (max-width: 400px) {
+    @media (max-width: 480px) {
       font-size: 0.7rem;
       padding: 0.3rem;
     }
@@ -315,23 +315,23 @@ const getPriorityLabel = (priority) => {
   grid-template-columns: repeat(7, 1fr);
   gap: 0.5rem;
 
-  @media (max-width: 400px) {
+  @media (max-width: 480px) {
     gap: 0.2rem;
   }
 
   .calendar-day {
     aspect-ratio: 1;
     padding: 0.5rem;
-    border-radius: 0.8rem;
+    border-radius: var(--radius-lg);
     display: flex;
     flex-direction: column;
     align-items: center;
     cursor: pointer;
     transition: all 0.2s ease;
-    border: 1px solid #ffffff27;
-    background-color: rgba(30, 30, 32, 0.5);
+    border: 1px solid var(--border-dark);
+    background-color: var(--bg-primary);
 
-    @media (max-width: 400px) {
+    @media (max-width: 480px) {
       padding: 0.2rem;
       border-radius: 0.6rem;
     }
@@ -341,7 +341,7 @@ const getPriorityLabel = (priority) => {
       font-weight: 500;
       margin-bottom: 0.3rem;
 
-      @media (max-width: 400px) {
+      @media (max-width: 480px) {
         font-size: 0.7rem;
         margin-bottom: 0.1rem;
       }
@@ -354,7 +354,7 @@ const getPriorityLabel = (priority) => {
       gap: 0.2rem;
       width: 100%;
 
-      @media (max-width: 400px) {
+      @media (max-width: 480px) {
         gap: 0.1rem;
       }
 
@@ -363,7 +363,7 @@ const getPriorityLabel = (priority) => {
         height: 0.5rem;
         border-radius: 50%;
 
-        @media (max-width: 400px) {
+        @media (max-width: 480px) {
           width: 0.3rem;
           height: 0.3rem;
         }
@@ -391,12 +391,12 @@ const getPriorityLabel = (priority) => {
     }
 
     &:hover {
-      background-color: rgba(221, 221, 221, 0.1);
+      background-color: var(--bg-tertiary);
     }
 
     &.current-month {
       .day-number {
-        color: #ffffff;
+        color: var(--text-tertiary);
       }
     }
 
@@ -404,7 +404,7 @@ const getPriorityLabel = (priority) => {
       opacity: 0.5;
 
       .day-number {
-        color: #b0b0b0;
+        color: var(--text-tertiary);
       }
     }
 
@@ -448,13 +448,13 @@ const getPriorityLabel = (priority) => {
 
 .day-tasks-panel {
   margin-top: 1.5rem;
-  background: rgba(40, 40, 42, 0.9);
-  border-radius: 1rem;
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
   padding: 1rem;
-  border: 1px solid rgba(221, 221, 221, 0.2);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
 
-  @media (max-width: 400px) {
+  @media (max-width: 480px) {
     margin-top: 1rem;
     padding: 0.8rem;
     border-radius: 0.8rem;
@@ -466,16 +466,16 @@ const getPriorityLabel = (priority) => {
     align-items: center;
     margin-bottom: 1rem;
 
-    @media (max-width: 400px) {
+    @media (max-width: 480px) {
       margin-bottom: 0.8rem;
     }
 
     h3 {
       margin: 0;
       font-size: 1.1rem;
-      color: #ffffff;
+      color: var(--text-primary);
 
-      @media (max-width: 400px) {
+      @media (max-width: 480px) {
         font-size: 0.9rem;
       }
     }
@@ -486,14 +486,14 @@ const getPriorityLabel = (priority) => {
     overflow-y: auto;
     padding-right: 0.5rem;
 
-    @media (max-width: 400px) {
+    @media (max-width: 480px) {
       max-height: 200px;
     }
 
     &::-webkit-scrollbar {
       width: 6px;
 
-      @media (max-width: 400px) {
+      @media (max-width: 480px) {
         width: 4px;
       }
     }
@@ -515,9 +515,9 @@ const getPriorityLabel = (priority) => {
     justify-content: center;
     gap: 0.5rem;
     padding: 1rem;
-    color: #b0b0b0;
+    color: var(--text-tertiary);
 
-    @media (max-width: 400px) {
+    @media (max-width: 480px) {
       padding: 0.8rem;
       font-size: 0.8rem;
     }
@@ -525,7 +525,7 @@ const getPriorityLabel = (priority) => {
     .material-icons {
       font-size: 1.2rem;
 
-      @media (max-width: 400px) {
+      @media (max-width: 480px) {
         font-size: 1rem;
       }
     }
@@ -536,13 +536,13 @@ const getPriorityLabel = (priority) => {
   display: flex;
   align-items: center;
   padding: 0.8rem;
-  border-radius: 0.8rem;
-  background: rgba(30, 30, 32, 0.7);
+  border-radius: var(--radius-lg);
+  background: var(--bg-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
   margin-bottom: 0.5rem;
 
-  @media (max-width: 400px) {
+  @media (max-width: 480px) {
     padding: 0.6rem;
     border-radius: 0.6rem;
     margin-bottom: 0.3rem;
@@ -582,7 +582,7 @@ const getPriorityLabel = (priority) => {
   .task-checkbox {
     margin-right: 0.8rem;
 
-    @media (max-width: 400px) {
+    @media (max-width: 480px) {
       margin-right: 0.6rem;
     }
 
@@ -590,7 +590,7 @@ const getPriorityLabel = (priority) => {
       color: #31a974;
       font-size: 1.2rem;
 
-      @media (max-width: 400px) {
+      @media (max-width: 480px) {
         font-size: 1rem;
       }
     }
@@ -601,10 +601,10 @@ const getPriorityLabel = (priority) => {
 
     .task-title {
       font-size: 0.95rem;
-      color: #ffffff;
+      color: var(--text-primary);
       margin-bottom: 0.2rem;
 
-      @media (max-width: 400px) {
+      @media (max-width: 480px) {
         font-size: 0.8rem;
         margin-bottom: 0.1rem;
       }
@@ -612,9 +612,8 @@ const getPriorityLabel = (priority) => {
 
     .task-priority {
       font-size: 0.75rem;
-      color: #b0b0b0;
 
-      @media (max-width: 400px) {
+      @media (max-width: 480px) {
         font-size: 0.65rem;
       }
     }
