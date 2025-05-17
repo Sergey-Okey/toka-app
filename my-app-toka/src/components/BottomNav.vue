@@ -1,21 +1,15 @@
 <template>
   <nav class="bottom-nav">
-    <div class="nav-background"></div>
     <ul class="nav-list">
       <li v-for="item in navItems" :key="item.to" class="nav-item">
-        <router-link
-          :to="item.to"
-          class="nav-link"
-          v-slot="{ isActive, isExactActive }"
-        >
+        <router-link :to="item.to" class="nav-link" v-slot="{ isExactActive }">
           <div class="nav-content" :class="{ active: isExactActive }">
-            <div class="icon-container">
+            <div class="icon-wrapper">
               <span class="icon material-symbols-rounded">
                 {{ item.icon }}
               </span>
             </div>
             <span class="label">{{ item.label }}</span>
-            <div class="active-indicator"></div>
           </div>
         </router-link>
       </li>
@@ -24,19 +18,17 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-
-const navItems = ref([
+const navItems = [
   { to: '/tasks', icon: 'task_alt', label: 'Задачи' },
   { to: '/calendar', icon: 'event', label: 'Календарь' },
   { to: '/dashboard', icon: 'dashboard', label: 'Дашборд' },
-])
+]
 </script>
 
 <style scoped lang="scss">
 .bottom-nav {
-  --nav-height: 80px;
-  --icon-size: 28px;
+  --nav-height: 72px;
+  --icon-size: 24px;
   position: fixed;
   bottom: 0;
   left: 0;
@@ -44,34 +36,25 @@ const navItems = ref([
   height: var(--nav-height);
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-end;
   z-index: 100;
-  padding: 0 var(--space-md);
-}
-
-.nav-background {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 100%;
-  background: var(--bg-secondary);
-  opacity: 0.95;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid var(--border-dark);
+  padding: 0 var(--space-md) var(--space-xs);
 }
 
 .nav-list {
   display: flex;
   justify-content: space-around;
   width: 100%;
-  max-width: 480px;
+  max-width: 100%;
   padding: 0;
   margin: 0;
   list-style: none;
-  position: relative;
-  z-index: 1;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-dark);
+  border-bottom: none;
+  padding: var(--space-xs) var(--space-sm) 0;
 }
 
 .nav-item {
@@ -87,121 +70,115 @@ const navItems = ref([
   align-items: center;
   width: 100%;
   padding: var(--space-xs);
+  position: relative;
 }
 
 .nav-content {
-  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   color: var(--text-secondary);
-  transition: all var(--transition-normal) var(--ease-out);
-  transform: translateY(0);
+  transition: color var(--transition-normal) var(--ease-out);
 
   &.active {
     color: var(--primary);
-    transform: translateY(-6px);
 
-    .icon-container {
-      transform: translateY(-12px) scale(1.15);
+    .icon-wrapper {
+      transform: translateY(-50%);
 
-      .icon {
+      &::after {
         transform: scale(1);
+        opacity: 1;
       }
     }
 
-    .active-indicator {
+    .icon {
+      transform: scale(1.15);
+    }
+
+    .label {
+      transform: translateY(4px);
       opacity: 1;
-      transform: scaleX(1);
     }
   }
 }
 
-.icon-container {
-  width: 48px;
-  height: 32px;
+.icon-wrapper {
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-lg);
-  transition: all var(--transition-normal) var(--ease-out);
-  margin-bottom: var(--space-xxs);
+  position: relative;
+  transition: transform var(--transition-normal) var(--ease-out);
 
-  .icon {
-    font-size: var(--text-2xl);
-    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--primary-bg);
+    border-radius: 50%;
+    transform: scale(0.5);
+    opacity: 0;
     transition: all var(--transition-normal) var(--ease-out);
+    z-index: -1;
   }
+}
+
+.icon {
+  font-size: var(--icon-size);
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  transition: transform var(--transition-normal) var(--ease-out);
+  will-change: transform;
 }
 
 .label {
-  font-size: var(--text-xl);
+  font-size: var(--text-sm);
   font-weight: 500;
-  transition: color var(--transition-normal) var(--ease-out);
-  position: relative;
-  z-index: 1;
-}
-
-.active-indicator {
-  position: absolute;
-  bottom: -8px;
-  width: 24px;
-  height: 3px;
-  background-color: var(--primary);
-  border-radius: 2px;
-  opacity: 0;
-  transform: scaleX(0.3);
+  margin-top: var(--space-xxs);
   transition: all var(--transition-normal) var(--ease-out);
-  box-shadow: 0 0 8px rgba(var(--primary-rgb), 0.3);
+  opacity: 0.8;
+  will-change: transform;
 }
 
-/* Анимации при наведении */
-.nav-link:not(.router-link-active) {
-  &:hover {
-    .icon-container {
-      transform: translateY(-4px);
-      background: var(--bg-tertiary);
-    }
-
-    .icon {
-      animation: iconFloat 1.5s var(--ease-out) infinite;
-    }
+/* Плавное появление при первой загрузке */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
-}
-
-/* Анимации */
-@keyframes iconFloat {
-  0%,
-  100% {
+  to {
+    opacity: 1;
     transform: translateY(0);
   }
-  50% {
-    transform: translateY(-4px);
-  }
+}
+
+.bottom-nav {
+  animation: fadeInUp 0.4s var(--ease-out) forwards;
 }
 
 /* Адаптивность */
 @media (max-width: 480px) {
   .bottom-nav {
-    --nav-height: 72px;
-    --icon-size: 24px;
+    --nav-height: 68px;
+    --icon-size: 22px;
+    padding: 0 var(--space-sm) var(--space-xs);
+  }
+
+  .nav-list {
+    padding: var(--space-xxs) var(--space-xs) 0;
+  }
+
+  .icon-wrapper {
+    width: 36px;
+    height: 36px;
   }
 
   .label {
-    font-size: var(--text-sm);
-  }
-
-  .icon-container {
-    width: 40px;
-    height: 28px;
-  }
-
-  .nav-content.active {
-    transform: translateY(-4px);
-
-    .icon-container {
-      transform: translateY(-8px) scale(1.1);
-    }
+    font-size: 0.65rem;
   }
 }
 </style>
