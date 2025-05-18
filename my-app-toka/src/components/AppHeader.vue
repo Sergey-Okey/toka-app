@@ -168,7 +168,7 @@ function debounce(fn: Function, delay: number) {
   z-index: 10;
   flex-wrap: wrap;
   transition: all var(--transition-normal) var(--ease-out);
-  background: var(--bg-primary);
+  background: var(--bg-primary-blur);
 
   &-container {
     width: 100%;
@@ -207,7 +207,7 @@ function debounce(fn: Function, delay: number) {
 
   .burger {
     display: none;
-    background: var(--bg-primary);
+    background: transparent;
     border: none;
     padding: var(--space-xs);
     cursor: pointer;
