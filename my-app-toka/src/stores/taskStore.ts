@@ -1,5 +1,10 @@
-import { ref, computed, Ref, onMounted } from 'vue'
+import { ref, computed, Ref, onMounted, watch } from 'vue'
 import { defineStore } from 'pinia'
+
+export interface Tag {
+  name: string
+  color?: string
+}
 
 export interface Task {
   id: string
@@ -9,18 +14,24 @@ export interface Task {
   completedDate?: string
   createdAt?: string
   category?: string
-  priority?: string
-  tags?: string[]
+  priority?: 'none' | 'low' | 'medium' | 'high'
+  tags?: Tag[]
+  description?: string
+  timeSpent?: number
+  lastModified?: string
 }
 
 export const useTaskStore = defineStore('tasks', () => {
   const tasks: Ref<Task[]> = ref([])
+  const tagColors: Ref<Record<string, string>> = ref({})
 
-  // Инициализация и загрузка из localStorage
+  // Инициализация и загрузка данных
   onMounted(() => {
     loadTasks()
+    loadTagColors()
   })
 
+  // Загрузка задач из localStorage
   const loadTasks = (): void => {
     try {
       const stored = localStorage.getItem('tasks')
@@ -28,45 +39,69 @@ export const useTaskStore = defineStore('tasks', () => {
         tasks.value = JSON.parse(stored)
       }
     } catch (e) {
-      console.warn('Ошибка чтения задач:', e)
+      console.error('Ошибка загрузки задач:', e)
     }
   }
 
+  // Загрузка цветов тегов из localStorage
+  const loadTagColors = (): void => {
+    try {
+      const stored = localStorage.getItem('tagColors')
+      if (stored) {
+        tagColors.value = JSON.parse(stored)
+      }
+    } catch (e) {
+      console.error('Ошибка загрузки цветов тегов:', e)
+    }
+  }
+
+  // Сохранение задач в localStorage
   const saveTasks = (): void => {
     localStorage.setItem('tasks', JSON.stringify(tasks.value))
   }
 
+  // Сохранение цветов тегов в localStorage
+  const saveTagColors = (): void => {
+    localStorage.setItem('tagColors', JSON.stringify(tagColors.value))
+  }
+
+  // Автоматическое сохранение при изменении
+  watch(tasks, saveTasks, { deep: true })
+  watch(tagColors, saveTagColors, { deep: true })
+
   // Основные методы работы с задачами
-  const addTask = (task: Task): void => {
-    tasks.value.unshift({
+  const addTask = (task: Omit<Task, 'id'>): Task => {
+    const newTask: Task = {
       ...task,
-      id: task.id || Date.now().toString(),
+      id: Date.now().toString(),
       createdAt: task.createdAt || new Date().toISOString(),
       completed: task.completed || false,
       tags: task.tags || [],
       priority: task.priority || 'medium',
-    })
-    saveTasks()
+      lastModified: new Date().toISOString(),
+    }
+
+    tasks.value.unshift(newTask)
+    updateTagColors(newTask.tags || [])
+    return newTask
   }
 
-  const updateTask = (updatedTask: Task): void => {
+  const updateTask = (updatedTask: Task): Task | null => {
     const index = tasks.value.findIndex((t) => t.id === updatedTask.id)
     if (index !== -1) {
       tasks.value[index] = {
         ...tasks.value[index],
         ...updatedTask,
+        lastModified: new Date().toISOString(),
       }
-      saveTasks()
+      updateTagColors(updatedTask.tags || [])
+      return tasks.value[index]
     }
-  }
-
-  const saveTask = (task: Task): void => {
-    task.id ? updateTask(task) : addTask(task)
+    return null
   }
 
   const deleteTask = (taskId: string): void => {
     tasks.value = tasks.value.filter((task) => task.id !== taskId)
-    saveTasks()
   }
 
   const toggleTaskCompletion = (taskId: string): void => {
@@ -74,41 +109,38 @@ export const useTaskStore = defineStore('tasks', () => {
     if (task) {
       task.completed = !task.completed
       task.completedDate = task.completed ? new Date().toISOString() : undefined
-      saveTasks()
+      task.lastModified = new Date().toISOString()
     }
   }
 
-  // Методы для поиска и фильтрации
+  // Методы для работы с тегами
+  const updateTagColors = (tags: Tag[]): void => {
+    tags.forEach((tag) => {
+      if (tag.name && !tagColors.value[tag.name] && tag.color) {
+        tagColors.value[tag.name] = tag.color
+      }
+    })
+  }
+
+  const getTagColor = (tagName: string): string => {
+    return tagColors.value[tagName] || '#31a974'
+  }
+
+  // Методы поиска и фильтрации
   const getTaskById = (id: string): Task | undefined => {
     return tasks.value.find((task) => task.id === id)
   }
 
-  const getTasksForDate = (date?: Date): Task[] => {
-    if (!date) return tasks.value
-    return tasks.value.filter((task) => {
-      if (!task.dueDate) return false
-      const taskDate = new Date(task.dueDate)
-      return (
-        taskDate.getDate() === date.getDate() &&
-        taskDate.getMonth() === date.getMonth() &&
-        taskDate.getFullYear() === date.getFullYear()
-      )
-    })
+  const getTasksForDate = (date: Date): Task[] => {
+    const dateStr = date.toISOString().split('T')[0]
+    return tasks.value.filter((task) => task.dueDate?.startsWith(dateStr))
   }
 
   const hasTasksForDate = (date: Date): boolean => {
-    return tasks.value.some((task) => {
-      if (!task.dueDate) return false
-      const taskDate = new Date(task.dueDate)
-      return (
-        taskDate.getDate() === date.getDate() &&
-        taskDate.getMonth() === date.getMonth() &&
-        taskDate.getFullYear() === date.getFullYear()
-      )
-    })
+    const dateStr = date.toISOString().split('T')[0]
+    return tasks.value.some((task) => task.dueDate?.startsWith(dateStr))
   }
 
-  // Вспомогательные методы
   const isTaskOverdue = (task: Task): boolean => {
     if (task.completed || !task.dueDate) return false
     const today = new Date()
@@ -132,36 +164,33 @@ export const useTaskStore = defineStore('tasks', () => {
     const categories = new Set(
       tasks.value.map((t) => t.category).filter(Boolean)
     )
-    return Array.from(categories)
+    return Array.from(categories) as string[]
   })
 
   const taskPriorities = computed(() => {
-    const priorities = new Set(
-      tasks.value.map((t) => t.priority).filter(Boolean)
-    )
-    return Array.from(priorities)
+    return ['none', 'low', 'medium', 'high']
   })
 
-  const taskTags = computed(() => {
+  const allTags = computed(() => {
     const allTags = tasks.value.flatMap((t) => t.tags || [])
-    return Array.from(new Set(allTags))
+    return Array.from(new Set(allTags.map((t) => t.name)))
   })
 
   return {
     // Данные
     tasks,
+    tagColors,
 
     // Методы
     addTask,
     updateTask,
-    saveTask,
     deleteTask,
     toggleTaskCompletion,
     getTaskById,
     getTasksForDate,
     hasTasksForDate,
     isTaskOverdue,
-    loadTasks,
+    getTagColor,
 
     // Computed свойства
     totalTasks,
@@ -170,6 +199,6 @@ export const useTaskStore = defineStore('tasks', () => {
     overdueTasks,
     taskCategories,
     taskPriorities,
-    taskTags,
+    allTags,
   }
 })
