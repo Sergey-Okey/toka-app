@@ -150,20 +150,12 @@ export const useTaskStore = defineStore('tasks', () => {
 
   // Computed свойства
   const totalTasks = computed(() => tasks.value.length)
-  const activeTasks = computed(
-    () => tasks.value.filter((t) => !t.completed).length
-  )
-  const completedTasks = computed(
-    () => tasks.value.filter((t) => t.completed).length
-  )
-  const overdueTasks = computed(
-    () => tasks.value.filter((t) => isTaskOverdue(t)).length
-  )
+  const activeTasks = computed(() => tasks.value.filter((t) => !t.completed).length)
+  const completedTasks = computed(() => tasks.value.filter((t) => t.completed).length)
+  const overdueTasks = computed(() => tasks.value.filter((t) => isTaskOverdue(t)).length)
 
   const taskCategories = computed(() => {
-    const categories = new Set(
-      tasks.value.map((t) => t.category).filter(Boolean)
-    )
+    const categories = new Set(tasks.value.map((t) => t.category).filter(Boolean))
     return Array.from(categories) as string[]
   })
 
