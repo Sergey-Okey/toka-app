@@ -17,9 +17,7 @@ import '@/assets/styles/variables.scss'
 import { onMounted } from 'vue'
 
 // Проверка prefers-reduced-motion
-const reduceMotion = window.matchMedia(
-  '(prefers-reduced-motion: reduce)'
-).matches
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 onMounted(() => {
   console.log('App mounted')
@@ -107,6 +105,12 @@ body {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+input,
+select,
+button {
+  font-family: 'Jost', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 // Миксин

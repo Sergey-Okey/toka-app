@@ -677,7 +677,7 @@ onUnmounted(() => {
 
 .back-button:hover {
   color: var(--primary);
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
 }
 
 .back-button i {
@@ -763,7 +763,7 @@ onUnmounted(() => {
 }
 
 .close-button:hover {
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
   color: var(--text-primary);
 }
 
@@ -800,7 +800,7 @@ label {
   padding: var(--space-sm) var(--space-md);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
   color: var(--text-primary);
   font-size: var(--text-base);
   transition: all var(--transition-fast) var(--ease-out);
@@ -868,7 +868,7 @@ label {
 
 .date-picker .clear-button:hover {
   color: var(--text-secondary);
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
 }
 
 .date-picker .clear-button:disabled {
@@ -1016,7 +1016,7 @@ label {
 }
 
 .secondary-button {
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
   color: var(--text-primary);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -1072,7 +1072,7 @@ label {
 
 .search-icon {
   position: absolute;
-  left: var(--space-md);
+  left: 10px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-tertiary);
@@ -1084,7 +1084,7 @@ label {
   padding: var(--space-sm) var(--space-md) var(--space-sm) var(--space-xl);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
   color: var(--text-primary);
   font-size: var(--text-base);
   transition: all var(--transition-fast) var(--ease-out);
@@ -1115,7 +1115,7 @@ label {
 
 .clear-search:hover {
   color: var(--text-secondary);
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
 }
 
 .filter-select,
@@ -1124,7 +1124,7 @@ label {
   padding: var(--space-sm) var(--space-md);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
   color: var(--text-primary);
   font-size: var(--text-base);
   cursor: pointer;
@@ -1181,7 +1181,7 @@ label {
 }
 
 .sort-direction {
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   width: 40px;
@@ -1191,6 +1191,9 @@ label {
   justify-content: center;
   cursor: pointer;
   transition: all var(--transition-fast) var(--ease-out);
+  i {
+    color: var(--primary);
+  }
 }
 
 .sort-direction:hover {
@@ -1206,7 +1209,7 @@ label {
 }
 
 .stat-card {
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
   border-radius: var(--radius-md);
   padding: var(--space-md);
   border: 1px solid var(--border);
@@ -1265,7 +1268,7 @@ label {
 .empty-icon {
   width: 80px;
   height: 80px;
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1292,7 +1295,7 @@ label {
 /* Task cards */
 .task-card {
   display: flex;
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
   transition: all var(--transition-fast) var(--ease-out);
@@ -1662,7 +1665,8 @@ label {
 }
 
 @media (max-width: 480px) {
-  .task-card {
+  .stats-container {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .task-actions {
