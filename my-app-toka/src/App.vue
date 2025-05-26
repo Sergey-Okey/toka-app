@@ -13,7 +13,6 @@
 </template>
 
 <script setup>
-import '@/assets/styles/variables.scss'
 import { onMounted } from 'vue'
 
 // Проверка prefers-reduced-motion
@@ -25,6 +24,7 @@ onMounted(() => {
 </script>
 
 <style lang="scss">
+@use '@/assets/styles/variables' as *;
 // Переменные
 $breakpoints: (
   xl: 1200px,
